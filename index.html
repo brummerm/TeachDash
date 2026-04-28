@@ -315,12 +315,52 @@ details[open] > summary::before { transform: rotate(90deg); }
   color: var(--text2); font-size: 13px; cursor: pointer; transition: all 0.15s;
 }
 #drop-hint:hover { border-color: var(--accent); color: var(--accent); }
+/* LOGIN */
+#login-screen { position:fixed; inset:0; z-index:1000; background:var(--bg); display:flex; align-items:center; justify-content:center; padding:20px; }
+.login-card { background:var(--surface); border:1px solid var(--border); border-radius:16px; padding:32px; width:100%; max-width:380px; box-shadow:0 8px 40px rgba(0,0,0,0.18); }
+.login-logo { font-size:22px; font-weight:700; color:var(--accent); text-align:center; margin-bottom:4px; }
+.login-sub { font-size:12px; color:var(--text2); text-align:center; margin-bottom:22px; }
+.auth-tabs { display:flex; gap:4px; margin-bottom:18px; }
+.auth-tab { flex:1; padding:8px; border-radius:7px; border:1px solid var(--border); background:var(--surface2); color:var(--text2); font-size:13px; font-weight:600; cursor:pointer; transition:all 0.12s; }
+.auth-tab.on { background:var(--accent); color:#fff; border-color:var(--accent); }
+.auth-form { display:flex; flex-direction:column; gap:10px; }
+.auth-form input { margin-top:2px; }
+.auth-err { font-size:12px; color:var(--danger); text-align:center; min-height:18px; margin-top:2px; }
+.auth-guest { font-size:12px; color:var(--text2); text-align:center; margin-top:14px; cursor:pointer; }
+.auth-guest:hover { color:var(--accent); text-decoration:underline; }
 </style>
 </head>
 <body>
+<!-- LOGIN SCREEN -->
+<div id="login-screen">
+  <div class="login-card">
+    <div class="login-logo">&#x1F5A5; Teacher Dashboard</div>
+    <div class="login-sub">Sign in to load your saved layouts</div>
+    <div class="auth-tabs">
+      <button class="auth-tab on" data-tab="signin">Sign In</button>
+      <button class="auth-tab" data-tab="register">Register</button>
+    </div>
+    <div id="tab-signin" class="auth-form">
+      <div><label>Username</label><input type="text" id="l-user" placeholder="Enter username" autocomplete="username"></div>
+      <div><label>Password</label><input type="password" id="l-pass" placeholder="Enter password" autocomplete="current-password"></div>
+      <button class="btn btn-p" id="l-submit">Sign In</button>
+      <div class="auth-err" id="l-err"></div>
+    </div>
+    <div id="tab-register" class="auth-form" style="display:none">
+      <div><label>Username</label><input type="text" id="r-user" placeholder="Choose a username" autocomplete="username"></div>
+      <div><label>Password</label><input type="password" id="r-pass" placeholder="At least 4 characters" autocomplete="new-password"></div>
+      <div><label>Confirm Password</label><input type="password" id="r-pass2" placeholder="Repeat password" autocomplete="new-password"></div>
+      <button class="btn btn-p" id="r-submit">Create Account</button>
+      <div class="auth-err" id="r-err"></div>
+    </div>
+    <div class="auth-guest" id="guest-btn">Continue as Guest (this device only)</div>
+  </div>
+</div>
+<!-- MAIN APP -->
+<div id="app" style="display:none">
 <div id="header">
   <span id="header-title">&#x1F5A5; Teacher Dashboard</span>
-  <button class="hdr-btn" id="add-btn">&#xFF0B; Add Widget</button>
+  <button class="hdr-btn" id="add-btn">+ Add Widget</button>
   <div class="hdr-sep"></div>
   <div class="profile-wrap">
     <span>Layout:</span>
@@ -330,14 +370,17 @@ details[open] > summary::before { transform: rotate(90deg); }
     <button class="prof-btn" data-p="3">4</button>
   </div>
   <div class="hdr-sep"></div>
-  <button class="hdr-btn" id="lock-btn">&#x1F513; Lock</button>
+  <button class="hdr-btn" id="lock-btn">Lock</button>
   <div id="header-spacer"></div>
-  <button class="hdr-btn" id="theme-btn">&#x1F319; Dark</button>
-  <button class="hdr-btn" id="contrast-btn">&#x25D0; Contrast</button>
-  <button class="hdr-btn" id="fs-btn">&#x26F6; Fullscreen</button>
+  <span style="font-size:11px;color:var(--text2);white-space:nowrap" id="user-display"></span>
+  <button class="hdr-btn" id="logout-btn">Sign Out</button>
+  <div class="hdr-sep"></div>
+  <button class="hdr-btn" id="theme-btn">Dark</button>
+  <button class="hdr-btn" id="contrast-btn">Contrast</button>
+  <button class="hdr-btn" id="fs-btn">Fullscreen</button>
 </div>
 <div id="grid">
-  <div id="drop-hint">&#xFF0B; Click &ldquo;Add Widget&rdquo; to get started</div>
+  <div id="drop-hint">+ Click &ldquo;Add Widget&rdquo; to get started</div>
 </div>
 <div id="wmodal">
   <div class="wmodal-inner">
@@ -346,6 +389,7 @@ details[open] > summary::before { transform: rotate(90deg); }
     <button class="modal-close" id="modal-close">Cancel</button>
   </div>
 </div>
+</div><!-- end #app -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <script>
 const DEFS = [
@@ -390,9 +434,91 @@ let S = {
   profiles: [{ widgets:[] },{ widgets:[] },{ widgets:[] },{ widgets:[] }]
 };
 
-function loadS() { try { const r=localStorage.getItem('tdash-v5'); if(r) S={...S,...JSON.parse(r)}; } catch(e){} }
-function saveS() { try { localStorage.setItem('tdash-v5',JSON.stringify(S)); } catch(e){} }
+// ── AUTH ──
+let currentUser = null;
+function storageKey() { return 'tdash-v5-'+(currentUser||'guest'); }
+function loadS() {
+  try {
+    let r=localStorage.getItem(storageKey());
+    // One-time migration: carry pre-login data into guest account
+    if(!r && currentUser==='guest') r=localStorage.getItem('tdash-v5');
+    if(r) S={...S,...JSON.parse(r)};
+  } catch(e){}
+}
+function saveS() { try { localStorage.setItem(storageKey(),JSON.stringify(S)); } catch(e){} }
 function prof() { return S.profiles[S.activeProfile]; }
+
+async function hashPass(p) {
+  const buf=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(p));
+  return Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,'0')).join('');
+}
+function getUsers() { try{return JSON.parse(localStorage.getItem('tdash-users')||'{}');}catch(e){return{};} }
+function saveUsers(u) { localStorage.setItem('tdash-users',JSON.stringify(u)); }
+
+async function doLogin(user,pass) {
+  if(!user) return 'Username required.';
+  const users=getUsers();
+  if(!users[user]) return 'Username not found.';
+  const h=await hashPass(pass);
+  if(users[user].hash!==h) return 'Incorrect password.';
+  return null;
+}
+async function doRegister(user,pass,pass2) {
+  if(!user.trim()) return 'Username required.';
+  if(pass.length<4) return 'Password must be at least 4 characters.';
+  if(pass!==pass2) return 'Passwords do not match.';
+  const users=getUsers();
+  if(users[user]) return 'Username already taken.';
+  users[user]={hash:await hashPass(pass),created:Date.now()};
+  saveUsers(users); return null;
+}
+
+function loginUser(username) {
+  currentUser=username;
+  localStorage.setItem('tdash-last-user',username);
+  g('login-screen').style.display='none';
+  g('app').style.display='block';
+  const ud=g('user-display'); if(ud) ud.textContent=username==='guest'?'Guest':username;
+  S={theme:'light',locked:false,activeProfile:0,profiles:[{widgets:[]},{widgets:[]},{widgets:[]},{widgets:[]}]};
+  initDashboard();
+}
+
+function initAuth() {
+  // Apply system colour preference before user logs in
+  if(window.matchMedia('(prefers-color-scheme: dark)').matches) document.body.dataset.theme='dark';
+  // Pre-fill last username
+  const last=localStorage.getItem('tdash-last-user');
+  if(last && g('l-user')) g('l-user').value=last;
+
+  // Tab switching
+  document.querySelectorAll('.auth-tab').forEach(btn=>{
+    btn.addEventListener('click',()=>{
+      document.querySelectorAll('.auth-tab').forEach(b=>b.classList.toggle('on',b===btn));
+      g('tab-signin').style.display=btn.dataset.tab==='signin'?'flex':'none';
+      g('tab-register').style.display=btn.dataset.tab==='register'?'flex':'none';
+    });
+  });
+
+  // Sign in
+  g('l-submit')?.addEventListener('click',async()=>{
+    const u=(g('l-user')?.value||'').trim(), p=g('l-pass')?.value||'';
+    const err=await doLogin(u,p);
+    const el=g('l-err'); if(el) el.textContent=err||'';
+    if(!err) loginUser(u);
+  });
+  [g('l-user'),g('l-pass')].forEach(el=>el?.addEventListener('keydown',e=>{ if(e.key==='Enter') g('l-submit')?.click(); }));
+
+  // Register
+  g('r-submit')?.addEventListener('click',async()=>{
+    const u=(g('r-user')?.value||'').trim(), p=g('r-pass')?.value||'', p2=g('r-pass2')?.value||'';
+    const err=await doRegister(u,p,p2);
+    const el=g('r-err'); if(el) el.textContent=err||'';
+    if(!err) loginUser(u);
+  });
+
+  // Guest
+  g('guest-btn')?.addEventListener('click',()=>loginUser('guest'));
+}
 
 let _uid=1;
 function uid() { return 'w'+(_uid++)+'_'+(Date.now()%1e8); }
@@ -871,15 +997,16 @@ function initPomodoro(w,body) {
 
 // ── NOTES ──
 function initNotes(w,body) {
-  w.state=w.state||{text:''};
-  // Flex column so the grow-wrapper fills available height; overflow hidden so flex chain works
+  if(!w.state||typeof w.state!=='object') w.state={};
+  w.state.text=w.state.text||''; w.state.fontSize=w.state.fontSize||14;
+  const s=w.state;
   body.style.display='flex'; body.style.flexDirection='column'; body.style.overflow='hidden'; body.style.gap='0';
-  // Textarea lives inside a position:relative grow-wrapper — absolute inset guarantees it fills the space
-  // regardless of the browser's intrinsic textarea height
-  body.innerHTML=`<div style="flex:1;position:relative;min-height:0;"><textarea class="notes-ta" id="notes-${w.id}" style="position:absolute;inset:0;width:100%;height:100%;box-sizing:border-box;" placeholder="Start typing...">${esc(w.state.text)}</textarea></div><div class="notes-footer"><button class="btn btn-s sm" id="notesclr-${w.id}">&#x2715; New class</button></div>`;
-  let saveT=null;
-  g('notes-'+w.id)?.addEventListener('input',()=>{ clearTimeout(saveT); saveT=setTimeout(()=>{w.state.text=g('notes-'+w.id)?.value||'';saveS();},600); });
-  g('notesclr-'+w.id)?.addEventListener('click',()=>{ if(!confirm('Clear notes for new class?')) return; const ta=g('notes-'+w.id);if(ta)ta.value='';w.state.text='';saveS(); });
+  body.innerHTML=`<div style="flex:1;position:relative;min-height:0;"><textarea class="notes-ta" id="notes-${w.id}" style="position:absolute;inset:0;width:100%;height:100%;box-sizing:border-box;font-size:${s.fontSize}px;" placeholder="Start typing...">${esc(s.text)}</textarea></div><div class="notes-footer"><div style="display:flex;align-items:center;gap:4px;"><button class="btn btn-s sm" id="notesfa-${w.id}" title="Smaller text">A-</button><span style="font-size:11px;color:var(--text2);min-width:26px;text-align:center;" id="notesfs-${w.id}">${s.fontSize}px</span><button class="btn btn-s sm" id="notesfb-${w.id}" title="Larger text">A+</button></div><button class="btn btn-s sm" id="notesclr-${w.id}">New class</button></div>`;
+  const ta=g('notes-'+w.id); let saveT=null;
+  ta?.addEventListener('input',()=>{ clearTimeout(saveT); saveT=setTimeout(()=>{s.text=ta?.value||'';saveS();},600); });
+  g('notesclr-'+w.id)?.addEventListener('click',()=>{ if(!confirm('Clear notes for new class?')) return; if(ta)ta.value='';s.text='';saveS(); });
+  g('notesfa-'+w.id)?.addEventListener('click',()=>{ s.fontSize=Math.max(10,s.fontSize-2); if(ta)ta.style.fontSize=s.fontSize+'px'; const fs=g('notesfs-'+w.id); if(fs)fs.textContent=s.fontSize+'px'; saveS(); });
+  g('notesfb-'+w.id)?.addEventListener('click',()=>{ s.fontSize=Math.min(28,s.fontSize+2); if(ta)ta.style.fontSize=s.fontSize+'px'; const fs=g('notesfs-'+w.id); if(fs)fs.textContent=s.fontSize+'px'; saveS(); });
 }
 
 // ── CHECKLIST (fixed state bug + progress bar) ──
@@ -931,9 +1058,14 @@ function initCalc(w,body) {
 // ── YOUTUBE ──
 function initYoutube(w,body) {
   w.state=w.state||{url:''};
+  body.style.display='flex'; body.style.flexDirection='column'; body.style.overflow='hidden';
   function getVid(url){const m=url.match(/(?:v=|youtu\.be\/|embed\/|shorts\/)([a-zA-Z0-9_-]{11})/);return m?m[1]:null;}
-  function renderEmbed(vid){const a=g('yta-'+w.id);if(!a)return;a.innerHTML=vid?`<iframe class="yt-frame" src="https://www.youtube.com/embed/${vid}?rel=0" allowfullscreen></iframe>`:'<div class="yt-empty">Paste a YouTube URL above</div>';}
-  body.innerHTML=`<div class="yt-controls"><input type="url" class="yt-url" id="ytu-${w.id}" placeholder="Paste YouTube URL..." value="${esc(w.state.url)}"><button class="btn btn-p sm" id="ytload-${w.id}">Load</button><button class="btn btn-s sm" id="ytclr-${w.id}">&#x2715;</button></div><div id="yta-${w.id}"></div>`;
+  function renderEmbed(vid){
+    const a=g('yta-'+w.id); if(!a) return;
+    if(vid) a.innerHTML=`<iframe style="flex:1;width:100%;min-height:0;border:0;border-radius:8px;background:#000" src="https://www.youtube.com/embed/${vid}?rel=0" allowfullscreen></iframe>`;
+    else a.innerHTML='<div style="flex:1;display:flex;align-items:center;justify-content:center;background:var(--surface2);border-radius:8px;border:2px dashed var(--border);color:var(--text2);font-size:13px;min-height:80px">Paste a YouTube URL above</div>';
+  }
+  body.innerHTML=`<div class="yt-controls"><input type="url" class="yt-url" id="ytu-${w.id}" placeholder="Paste YouTube URL..." value="${esc(w.state.url)}"><button class="btn btn-p sm" id="ytload-${w.id}">Load</button><button class="btn btn-s sm" id="ytclr-${w.id}">&#x2715;</button></div><div id="yta-${w.id}" style="flex:1;display:flex;flex-direction:column;min-height:0;"></div>`;
   renderEmbed(w.state.url?getVid(w.state.url):null);
   function load(){const u=g('ytu-'+w.id)?.value.trim()||'';w.state.url=u;saveS();renderEmbed(getVid(u));}
   g('ytload-'+w.id)?.addEventListener('click',load);
@@ -943,15 +1075,82 @@ function initYoutube(w,body) {
 
 // ── NAME PICKER ──
 function initPicker(w,body) {
-  w.state=w.state||{names:'',last:''};
-  let pickedSet=new Set();
-  body.innerHTML=`<div class="picker-result" id="pr-${w.id}">${w.state.last?esc(w.state.last):'Press Pick!'}</div><div class="btn-row"><button class="btn btn-p" id="pick-${w.id}">&#x1F3AF; Pick!</button><button class="btn btn-s sm" id="pickreset-${w.id}">Reset pool</button></div><details style="margin-top:10px"><summary>Edit roster</summary><textarea class="picker-names" id="pnames-${w.id}" placeholder="One name per line...">${esc(w.state.names)}</textarea><div class="picker-meta" id="pmeta-${w.id}"></div></details>`;
-  function getNames(){return(g('pnames-'+w.id)?.value||w.state.names).split('\n').map(n=>n.trim()).filter(Boolean);}
-  function updateMeta(){const names=getNames();const m=g('pmeta-'+w.id);if(m)m.textContent=names.length+' names \u00b7 '+(names.length-pickedSet.size)+' remaining';}
-  g('pnames-'+w.id)?.addEventListener('input',()=>{w.state.names=g('pnames-'+w.id)?.value||'';saveS();updateMeta();});
-  g('pickreset-'+w.id)?.addEventListener('click',()=>{pickedSet.clear();updateMeta();const r=g('pr-'+w.id);if(r)r.textContent='Pool reset!';});
-  g('pick-'+w.id)?.addEventListener('click',()=>{const names=getNames();if(!names.length){const r=g('pr-'+w.id);if(r)r.textContent='Add names first!';return;}let avail=names.filter(n=>!pickedSet.has(n));if(!avail.length){pickedSet.clear();avail=names;}const r=g('pr-'+w.id);if(!r)return;r.classList.add('spinning');let c=0;const spin=setInterval(()=>{r.textContent=avail[Math.floor(Math.random()*avail.length)];c++;if(c>=14){clearInterval(spin);r.classList.remove('spinning');const chosen=avail[Math.floor(Math.random()*avail.length)];r.textContent=chosen;pickedSet.add(chosen);w.state.last=chosen;saveS();updateMeta();}},75);});
-  updateMeta();
+  // Migrate single-roster state
+  if(!w.state||!Array.isArray(w.state.rosters)){
+    const old=w.state||{};
+    w.state={rosters:[{name:'Class 1',names:old.names||''}],active:0,last:old.last||''};
+  }
+  const s=w.state;
+  if(!Number.isInteger(s.active)||s.active>=s.rosters.length) s.active=0;
+  let pickedSets=s.rosters.map(()=>new Set());
+
+  function activeR(){ return s.rosters[s.active]; }
+  function getNames(){ return (activeR().names||'').split('\n').map(n=>n.trim()).filter(Boolean); }
+
+  function render(){
+    const tabs=s.rosters.map((r,i)=>`<button class="toggle-btn sm${i===s.active?' on':''}" data-ri="${i}" title="${esc(r.name)}">${esc(r.name.length>8?r.name.slice(0,7)+'\u2026':r.name)}</button>`).join('');
+    const canAdd=s.rosters.length<8;
+    body.innerHTML=`
+      <div style="display:flex;gap:4px;flex-wrap:wrap;margin-bottom:8px;align-items:center;">
+        ${tabs}
+        ${canAdd?`<button class="copy-day-btn" id="paddc-${w.id}">+ Class</button>`:''}
+      </div>
+      <div class="picker-result" id="pr-${w.id}">${s.last?esc(s.last):'Press Pick!'}</div>
+      <div class="btn-row">
+        <button class="btn btn-p" id="pick-${w.id}">Pick!</button>
+        <button class="btn btn-s sm" id="pickreset-${w.id}">Reset pool</button>
+      </div>
+      <details style="margin-top:8px">
+        <summary>Edit: ${esc(activeR().name)} <span id="pmeta-${w.id}" style="font-weight:400"></span></summary>
+        <div style="display:flex;gap:4px;margin:6px 0 4px">
+          <input type="text" id="prname-${w.id}" value="${esc(activeR().name)}" style="flex:1;font-size:11px;padding:4px 6px" placeholder="Class name">
+          <button class="btn btn-s sm" id="prenm-${w.id}">Rename</button>
+          ${s.rosters.length>1?`<button class="btn btn-s sm" id="prdel-${w.id}" style="color:var(--danger)">Delete</button>`:''}
+        </div>
+        <textarea class="picker-names" id="pnames-${w.id}" placeholder="One name per line...">${esc(activeR().names)}</textarea>
+      </details>`;
+
+    body.querySelectorAll('[data-ri]').forEach(btn=>{
+      btn.addEventListener('click',()=>{ s.active=+btn.dataset.ri; saveS(); render(); });
+    });
+    g('paddc-'+w.id)?.addEventListener('click',()=>{
+      if(s.rosters.length>=8) return;
+      s.rosters.push({name:'Class '+(s.rosters.length+1),names:''});
+      pickedSets.push(new Set());
+      s.active=s.rosters.length-1; saveS(); render();
+    });
+    g('prenm-'+w.id)?.addEventListener('click',()=>{
+      const n=g('prname-'+w.id)?.value.trim(); if(n){activeR().name=n;saveS();render();}
+    });
+    g('prdel-'+w.id)?.addEventListener('click',()=>{
+      if(s.rosters.length<=1||!confirm('Delete "'+activeR().name+'"?')) return;
+      s.rosters.splice(s.active,1); pickedSets.splice(s.active,1);
+      s.active=Math.min(s.active,s.rosters.length-1); saveS(); render();
+    });
+    g('pnames-'+w.id)?.addEventListener('input',()=>{ activeR().names=g('pnames-'+w.id)?.value||''; saveS(); updateMeta(); });
+    g('pickreset-'+w.id)?.addEventListener('click',()=>{ pickedSets[s.active].clear(); updateMeta(); const r=g('pr-'+w.id); if(r)r.textContent='Pool reset!'; });
+    g('pick-'+w.id)?.addEventListener('click',()=>{
+      const names=getNames();
+      if(!names.length){const r=g('pr-'+w.id);if(r)r.textContent='Add names first!';return;}
+      let avail=names.filter(n=>!pickedSets[s.active].has(n));
+      if(!avail.length){pickedSets[s.active].clear();avail=names;}
+      const r=g('pr-'+w.id); if(!r) return;
+      r.classList.add('spinning'); let c=0;
+      const spin=setInterval(()=>{
+        r.textContent=avail[Math.floor(Math.random()*avail.length)]; c++;
+        if(c>=14){clearInterval(spin);r.classList.remove('spinning');
+          const chosen=avail[Math.floor(Math.random()*avail.length)];
+          r.textContent=chosen; pickedSets[s.active].add(chosen); s.last=chosen; saveS(); updateMeta();}
+      },75);
+    });
+    updateMeta();
+  }
+
+  function updateMeta(){
+    const names=getNames(); const m=g('pmeta-'+w.id);
+    if(m) m.textContent='('+names.length+' names, '+(names.length-pickedSets[s.active].size)+' left)';
+  }
+  render();
 }
 
 // ── NOISE METER ──
@@ -1005,16 +1204,16 @@ function openModal(){g('wmodal').classList.add('open');}
 function closeModal(){g('wmodal').classList.remove('open');}
 
 // ── THEME ──
-function applyTheme(){document.body.dataset.theme=S.theme==='light'?'':S.theme;const tb=g('theme-btn'),cb=g('contrast-btn');if(tb){tb.textContent=S.theme==='dark'?'&#x2600;&#xFE0F; Light':'&#x1F319; Dark';tb.classList.toggle('on',S.theme==='dark');}if(cb)cb.classList.toggle('on',S.theme==='contrast');}
+function applyTheme(){document.body.dataset.theme=S.theme==='light'?'':S.theme;const tb=g('theme-btn'),cb=g('contrast-btn');if(tb){tb.textContent=S.theme==='dark'?'Light':'Dark';tb.classList.toggle('on',S.theme==='dark');}if(cb)cb.classList.toggle('on',S.theme==='contrast');}
 
 // ── PROFILE ──
 function switchProfile(idx){prof().widgets.forEach(w=>cleanup(w.id));document.querySelectorAll('.widget').forEach(el=>el.remove());S.activeProfile=idx;document.querySelectorAll('.prof-btn').forEach(b=>b.classList.toggle('on',+b.dataset.p===idx));saveS();renderProfile();}
 
 // ── LOCK ──
-function applyLock(){document.body.classList.toggle('locked',S.locked);const b=g('lock-btn');if(b){b.textContent=S.locked?'&#x1F512; Locked':'&#x1F513; Lock';b.classList.toggle('lock-on',S.locked);}}
+function applyLock(){document.body.classList.toggle('locked',S.locked);const b=g('lock-btn');if(b){b.textContent=S.locked?'Locked':'Lock';b.classList.toggle('lock-on',S.locked);}}
 
 // ── INIT ──
-function init(){
+function initDashboard(){
   loadS(); applyTheme(); buildModal();
   g('drop-hint')?.addEventListener('click',openModal);
   g('add-btn')?.addEventListener('click',openModal);
@@ -1023,13 +1222,20 @@ function init(){
   g('theme-btn')?.addEventListener('click',()=>{S.theme=S.theme==='dark'?'light':'dark';applyTheme();saveS();});
   g('contrast-btn')?.addEventListener('click',()=>{S.theme=S.theme==='contrast'?'light':'contrast';applyTheme();saveS();});
   g('lock-btn')?.addEventListener('click',()=>{S.locked=!S.locked;applyLock();saveS();});
-  g('fs-btn')?.addEventListener('click',()=>{if(!document.fullscreenElement){document.documentElement.requestFullscreen();g('fs-btn').textContent='&#x26F6; Exit Full';}else{document.exitFullscreen();g('fs-btn').textContent='&#x26F6; Fullscreen';}});
+  g('fs-btn')?.addEventListener('click',()=>{if(!document.fullscreenElement){document.documentElement.requestFullscreen();g('fs-btn').textContent='Exit Full';}else{document.exitFullscreen();g('fs-btn').textContent='Fullscreen';}});
+  g('logout-btn')?.addEventListener('click',()=>{
+    prof().widgets.forEach(w=>cleanup(w.id));
+    document.querySelectorAll('.widget').forEach(el=>el.remove());
+    currentUser=null; S={theme:'light',locked:false,activeProfile:0,profiles:[{widgets:[]},{widgets:[]},{widgets:[]},{widgets:[]}]};
+    g('app').style.display='none'; g('login-screen').style.display='flex';
+    if(g('l-pass')) g('l-pass').value='';
+  });
   document.querySelectorAll('.prof-btn').forEach(b=>{b.addEventListener('click',()=>switchProfile(+b.dataset.p));});
   document.querySelectorAll('.prof-btn').forEach(b=>b.classList.toggle('on',+b.dataset.p===S.activeProfile));
   renderProfile(); applyLock();
   if(prof().widgets.length===0){ ['clock','period','timer','notes','checklist'].forEach(t=>addWidget(t)); }
 }
-document.addEventListener('DOMContentLoaded',init);
+document.addEventListener('DOMContentLoaded', initAuth);
 </script>
 </body>
 </html>
