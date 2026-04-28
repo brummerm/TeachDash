@@ -198,8 +198,8 @@ label { font-size: 11px; color: var(--text2); display: block; margin-bottom: 3px
 .pomo-cfg-row { display: flex; gap: 6px; align-items: center; font-size: 11px; color: var(--text2); margin-bottom: 4px; }
 .pomo-cfg-row input { width: 52px; text-align: center; }
 /* NOTES */
-.notes-ta { width: 100%; min-height: 130px; background: transparent; border: none; color: var(--text); font-size: 14px; line-height: 1.65; resize: none; outline: none; padding: 0; }
-.notes-footer { display: flex; justify-content: flex-end; margin-top: 6px; }
+.notes-ta { width: 100%; flex: 1; min-height: 0; background: transparent; border: none; color: var(--text); font-size: 14px; line-height: 1.65; resize: none; outline: none; padding: 0; }
+.notes-footer { display: flex; justify-content: flex-end; margin-top: 6px; flex-shrink: 0; }
 /* CHECKLIST */
 .cl-list { display: flex; flex-direction: column; gap: 4px; margin-bottom: 8px; }
 .cl-item { display: flex; align-items: center; gap: 6px; padding: 5px 8px; border-radius: 6px; background: var(--surface2); }
@@ -872,6 +872,8 @@ function initPomodoro(w,body) {
 // ── NOTES ──
 function initNotes(w,body) {
   w.state=w.state||{text:''};
+  // Make body a flex column so textarea stretches to fill all available height
+  body.style.display='flex'; body.style.flexDirection='column'; body.style.gap='0';
   body.innerHTML=`<textarea class="notes-ta" id="notes-${w.id}" placeholder="Start typing...">${esc(w.state.text)}</textarea><div class="notes-footer"><button class="btn btn-s sm" id="notesclr-${w.id}">&#x2715; New class</button></div>`;
   let saveT=null;
   g('notes-'+w.id)?.addEventListener('input',()=>{ clearTimeout(saveT); saveT=setTimeout(()=>{w.state.text=g('notes-'+w.id)?.value||'';saveS();},600); });
