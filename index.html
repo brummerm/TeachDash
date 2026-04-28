@@ -872,9 +872,11 @@ function initPomodoro(w,body) {
 // ── NOTES ──
 function initNotes(w,body) {
   w.state=w.state||{text:''};
-  // Make body a flex column so textarea stretches to fill all available height
-  body.style.display='flex'; body.style.flexDirection='column'; body.style.gap='0';
-  body.innerHTML=`<textarea class="notes-ta" id="notes-${w.id}" placeholder="Start typing...">${esc(w.state.text)}</textarea><div class="notes-footer"><button class="btn btn-s sm" id="notesclr-${w.id}">&#x2715; New class</button></div>`;
+  // Flex column so the grow-wrapper fills available height; overflow hidden so flex chain works
+  body.style.display='flex'; body.style.flexDirection='column'; body.style.overflow='hidden'; body.style.gap='0';
+  // Textarea lives inside a position:relative grow-wrapper — absolute inset guarantees it fills the space
+  // regardless of the browser's intrinsic textarea height
+  body.innerHTML=`<div style="flex:1;position:relative;min-height:0;"><textarea class="notes-ta" id="notes-${w.id}" style="position:absolute;inset:0;width:100%;height:100%;box-sizing:border-box;" placeholder="Start typing...">${esc(w.state.text)}</textarea></div><div class="notes-footer"><button class="btn btn-s sm" id="notesclr-${w.id}">&#x2715; New class</button></div>`;
   let saveT=null;
   g('notes-'+w.id)?.addEventListener('input',()=>{ clearTimeout(saveT); saveT=setTimeout(()=>{w.state.text=g('notes-'+w.id)?.value||'';saveS();},600); });
   g('notesclr-'+w.id)?.addEventListener('click',()=>{ if(!confirm('Clear notes for new class?')) return; const ta=g('notes-'+w.id);if(ta)ta.value='';w.state.text='';saveS(); });
