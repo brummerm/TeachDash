@@ -45,31 +45,22 @@
   --success: #44ff88;
   --shadow: 0 0 0 1px #ffdd00;
 }
-
 * { box-sizing: border-box; margin: 0; padding: 0; }
-
 body {
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  background: var(--bg);
-  color: var(--text);
-  min-height: 100vh;
-  transition: background 0.2s, color 0.2s;
+  background: var(--bg); color: var(--text);
+  min-height: 100vh; transition: background 0.2s, color 0.2s;
 }
-
-/* ── HEADER ── */
+body.resizing { cursor: col-resize !important; user-select: none !important; }
+/* HEADER */
 #header {
   position: sticky; top: 0; z-index: 200;
-  height: var(--header-h);
-  background: var(--surface);
+  height: var(--header-h); background: var(--surface);
   border-bottom: 1px solid var(--border);
   display: flex; align-items: center;
-  padding: 0 14px; gap: 6px;
-  box-shadow: var(--shadow);
+  padding: 0 14px; gap: 6px; box-shadow: var(--shadow);
 }
-#header-title {
-  font-size: 16px; font-weight: 700;
-  color: var(--accent); margin-right: 8px; white-space: nowrap;
-}
+#header-title { font-size: 16px; font-weight: 700; color: var(--accent); margin-right: 8px; white-space: nowrap; }
 .hdr-sep { width: 1px; height: 26px; background: var(--border); flex-shrink: 0; margin: 0 2px; }
 .hdr-btn {
   background: var(--surface2); border: 1px solid var(--border);
@@ -85,38 +76,25 @@ body {
 .prof-btn {
   width: 28px; height: 28px; border-radius: 6px;
   border: 1px solid var(--border); background: var(--surface2);
-  color: var(--text); font-size: 11px; font-weight: 700;
-  cursor: pointer; transition: all 0.12s;
+  color: var(--text); font-size: 11px; font-weight: 700; cursor: pointer; transition: all 0.12s;
 }
 .prof-btn:hover, .prof-btn.on { background: var(--accent); color: #fff; border-color: var(--accent); }
 #header-spacer { flex: 1; }
-
-/* ── GRID ── */
+/* GRID */
 #grid {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 12px; padding: 14px;
-  align-content: start;
+  display: grid; grid-template-columns: repeat(4, 1fr);
+  gap: 12px; padding: 14px; align-content: start;
 }
-@media (max-width: 1280px) {
-  #grid { grid-template-columns: repeat(3, 1fr); }
-  .widget[data-size="4"] { grid-column: span 3; }
-}
-@media (max-width: 960px) {
-  #grid { grid-template-columns: repeat(2, 1fr); }
-  .widget[data-size="3"], .widget[data-size="4"] { grid-column: span 2; }
-}
-@media (max-width: 600px) {
-  #grid { grid-template-columns: 1fr; }
-  .widget[data-size="2"], .widget[data-size="3"], .widget[data-size="4"] { grid-column: span 1; }
-}
-
-/* ── WIDGET ── */
+@media (max-width:1280px) { #grid { grid-template-columns: repeat(3,1fr); } .widget[data-size="4"] { grid-column: span 3; } }
+@media (max-width:960px)  { #grid { grid-template-columns: repeat(2,1fr); } .widget[data-size="3"],.widget[data-size="4"] { grid-column: span 2; } }
+@media (max-width:600px)  { #grid { grid-template-columns: 1fr; } .widget[data-size="2"],.widget[data-size="3"],.widget[data-size="4"] { grid-column: span 1; } }
+/* WIDGET */
 .widget {
   background: var(--surface); border: 1px solid var(--border);
   border-radius: var(--radius); box-shadow: var(--shadow);
   display: flex; flex-direction: column; overflow: hidden;
   transition: box-shadow 0.15s, border-color 0.15s, opacity 0.15s;
+  position: relative;
 }
 .widget[data-size="1"] { grid-column: span 1; }
 .widget[data-size="2"] { grid-column: span 2; }
@@ -124,12 +102,24 @@ body {
 .widget[data-size="4"] { grid-column: span 4; }
 .widget.dragging { opacity: 0.35; }
 .widget.drop-target { border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent); }
-
+/* RESIZE HANDLE */
+.resize-handle {
+  position: absolute; right: 0; top: 0; bottom: 0;
+  width: 10px; cursor: col-resize; z-index: 20;
+  display: flex; align-items: center; justify-content: center;
+  opacity: 0; transition: opacity 0.18s;
+}
+.resize-handle::after {
+  content: ''; width: 3px; height: 36px;
+  background: var(--accent); border-radius: 2px; opacity: 0.8;
+}
+.widget:hover .resize-handle { opacity: 1; }
+body.locked .resize-handle { display: none; }
+/* WIDGET HEADER */
 .wh {
   display: flex; align-items: center; gap: 6px;
   padding: 7px 10px; background: var(--surface2);
-  border-bottom: 1px solid var(--border);
-  cursor: grab; user-select: none;
+  border-bottom: 1px solid var(--border); cursor: grab; user-select: none;
 }
 .wh:active { cursor: grabbing; }
 body.locked .wh { cursor: default; }
@@ -138,9 +128,7 @@ body.locked .wh { cursor: default; }
   font-size: 12px; font-weight: 600; color: var(--text2);
   flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
 }
-.wh-title[contenteditable="true"] {
-  cursor: text; border-bottom: 1px solid var(--accent); outline: none;
-}
+.wh-title[contenteditable="true"] { cursor: text; border-bottom: 1px solid var(--accent); outline: none; }
 .wh-controls { display: flex; gap: 2px; flex-shrink: 0; }
 .wc {
   width: 20px; height: 20px; border-radius: 4px;
@@ -153,21 +141,14 @@ body.locked .wh { cursor: default; }
 .wc.rm:hover { background: var(--danger); border-color: var(--danger); }
 .wc.on { background: var(--accent); color: #fff; border-color: var(--accent); }
 body.locked .wc:not(.no-lock) { pointer-events: none; opacity: 0.3; }
-
 .wb { flex: 1; padding: 14px; overflow: auto; }
-
-/* ── SHARED ── */
-.btn {
-  padding: 7px 14px; border-radius: 7px;
-  font-size: 12px; font-weight: 600;
-  cursor: pointer; border: none; transition: all 0.12s;
-}
+/* SHARED */
+.btn { padding: 7px 14px; border-radius: 7px; font-size: 12px; font-weight: 600; cursor: pointer; border: none; transition: all 0.12s; }
 .btn-p { background: var(--accent); color: #fff; }
 .btn-p:hover { background: var(--accent2); }
 .btn-p:active { transform: scale(0.97); }
 .btn-s { background: var(--surface2); border: 1px solid var(--border); color: var(--text); }
 .btn-s:hover { background: var(--border); }
-.btn-d { background: var(--danger); color: #fff; }
 .btn-row { display: flex; gap: 6px; justify-content: center; flex-wrap: wrap; margin-top: 10px; }
 .sm { padding: 5px 10px; font-size: 11px; }
 input[type="text"], input[type="url"], input[type="number"], input[type="time"], textarea, select {
@@ -177,95 +158,59 @@ input[type="text"], input[type="url"], input[type="number"], input[type="time"],
 }
 input:focus, textarea:focus, select:focus { outline: none; border-color: var(--accent); }
 label { font-size: 11px; color: var(--text2); display: block; margin-bottom: 3px; }
-
-/* ── CLOCK ── */
-.clock-time {
-  font-size: clamp(36px, 9vw, 80px);
-  font-weight: 200; font-variant-numeric: tabular-nums;
-  text-align: center; line-height: 1; color: var(--text);
-}
+/* CLOCK */
+.clock-time { font-size: clamp(36px,9vw,80px); font-weight: 200; font-variant-numeric: tabular-nums; text-align: center; line-height: 1; }
 .clock-date { font-size: 13px; color: var(--text2); text-align: center; margin-top: 6px; }
-
-/* ── TIMER / PERIOD / POMODORO ── */
-.big-time {
-  font-size: clamp(28px, 6vw, 60px);
-  font-weight: 300; font-variant-numeric: tabular-nums;
-  text-align: center; line-height: 1; color: var(--text);
-  margin-bottom: 10px;
-}
+/* BIG TIME */
+.big-time { font-size: clamp(28px,6vw,60px); font-weight: 300; font-variant-numeric: tabular-nums; text-align: center; line-height: 1; margin-bottom: 10px; }
 .big-time.warn { color: var(--warning); }
 .big-time.crit { color: var(--danger); }
 .prog-track { height: 6px; background: var(--border); border-radius: 3px; overflow: hidden; margin-bottom: 10px; }
 .prog-fill { height: 100%; border-radius: 3px; transition: width 1s linear, background 0.4s; }
+/* TIMER */
 .timer-inputs { display: flex; gap: 6px; align-items: center; justify-content: center; margin-bottom: 8px; }
 .t-inp { width: 52px; text-align: center; font-size: 16px; padding: 5px; }
 .presets { display: flex; flex-wrap: wrap; gap: 4px; justify-content: center; margin-bottom: 8px; }
-.preset {
-  background: var(--surface2); border: 1px solid var(--border);
-  color: var(--text2); padding: 3px 7px; border-radius: 4px;
-  cursor: pointer; font-size: 11px; font-weight: 500; transition: all 0.1s;
-}
+.preset { background: var(--surface2); border: 1px solid var(--border); color: var(--text2); padding: 3px 7px; border-radius: 4px; cursor: pointer; font-size: 11px; font-weight: 500; transition: all 0.1s; }
 .preset:hover { background: var(--accent); color: #fff; border-color: var(--accent); }
-
-/* ── STOPWATCH ── */
+.preset.pass { border-color: var(--warning); color: var(--warning); }
+.preset.pass:hover { background: var(--warning); color: #fff; border-color: var(--warning); }
+/* STOPWATCH */
 .sw-laps { max-height: 130px; overflow-y: auto; margin-top: 8px; }
-.sw-lap {
-  display: flex; justify-content: space-between;
-  padding: 3px 6px; font-size: 11px;
-  font-variant-numeric: tabular-nums; color: var(--text2);
-  border-bottom: 1px solid var(--border);
-}
+.sw-lap { display: flex; justify-content: space-between; padding: 3px 6px; font-size: 11px; font-variant-numeric: tabular-nums; color: var(--text2); border-bottom: 1px solid var(--border); }
 .sw-lap:last-child { border: none; }
-
-/* ── POMODORO RING ── */
+/* POMODORO */
 .pomo-wrap { position: relative; width: 110px; height: 110px; margin: 0 auto 10px; }
 .pomo-wrap svg { transform: rotate(-90deg); }
 .pr-bg { fill: none; stroke: var(--border); stroke-width: 8; }
 .pr-fill { fill: none; stroke: var(--accent); stroke-width: 8; stroke-linecap: round; transition: stroke-dashoffset 1s linear; }
-.pomo-label-ring {
-  position: absolute; inset: 0;
-  display: flex; align-items: center; justify-content: center;
-  font-size: 18px; font-weight: 300; font-variant-numeric: tabular-nums; color: var(--text);
-}
+.pomo-label-ring { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-size: 18px; font-weight: 300; font-variant-numeric: tabular-nums; }
 .pomo-phase { font-size: 11px; font-weight: 700; color: var(--accent); text-align: center; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 6px; }
 .pomo-count { font-size: 12px; color: var(--text2); text-align: center; margin-bottom: 8px; }
-
-/* ── NOTES ── */
-.notes-ta {
-  width: 100%; min-height: 130px; background: transparent;
-  border: none; color: var(--text); font-size: 14px;
-  line-height: 1.65; resize: none; outline: none; padding: 0;
-}
-
-/* ── CHECKLIST ── */
+.pomo-cfg-row { display: flex; gap: 6px; align-items: center; font-size: 11px; color: var(--text2); margin-bottom: 4px; }
+.pomo-cfg-row input { width: 52px; text-align: center; }
+/* NOTES */
+.notes-ta { width: 100%; min-height: 130px; background: transparent; border: none; color: var(--text); font-size: 14px; line-height: 1.65; resize: none; outline: none; padding: 0; }
+.notes-footer { display: flex; justify-content: flex-end; margin-top: 6px; }
+/* CHECKLIST */
 .cl-list { display: flex; flex-direction: column; gap: 4px; margin-bottom: 8px; }
-.cl-item {
-  display: flex; align-items: center; gap: 6px;
-  padding: 5px 8px; border-radius: 6px; background: var(--surface2);
-}
+.cl-item { display: flex; align-items: center; gap: 6px; padding: 5px 8px; border-radius: 6px; background: var(--surface2); }
 .cl-item input[type="checkbox"] { width: 15px; height: 15px; cursor: pointer; accent-color: var(--accent); flex-shrink: 0; }
-.cl-item .cl-text {
-  flex: 1; background: transparent; border: none; color: var(--text);
-  font-size: 13px; outline: none;
-}
+.cl-item .cl-text { flex: 1; background: transparent; border: none; color: var(--text); font-size: 13px; outline: none; }
 .cl-item.done .cl-text { text-decoration: line-through; opacity: 0.55; }
 .cl-del { background: none; border: none; color: var(--text2); cursor: pointer; font-size: 13px; padding: 0 2px; opacity: 0.4; transition: opacity 0.1s; }
 .cl-del:hover { opacity: 1; color: var(--danger); }
 .cl-add { display: flex; gap: 6px; }
-
-/* ── CALCULATOR ── */
-.calc-screen {
-  background: var(--surface2); border: 1px solid var(--border);
-  border-radius: 8px; padding: 10px 12px; text-align: right; margin-bottom: 8px;
-}
+.cl-footer { display: flex; align-items: center; justify-content: space-between; margin-top: 8px; font-size: 11px; color: var(--text2); gap: 6px; flex-wrap: wrap; }
+.cl-progress { display: flex; align-items: center; gap: 6px; flex: 1; min-width: 80px; }
+.cl-prog-bar { flex: 1; height: 4px; background: var(--border); border-radius: 2px; overflow: hidden; }
+.cl-prog-fill { height: 100%; background: var(--success); border-radius: 2px; transition: width 0.3s; }
+/* CALCULATOR */
+.calc-screen { background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; padding: 10px 12px; text-align: right; margin-bottom: 8px; }
 .calc-expr { font-size: 11px; color: var(--text2); min-height: 16px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.calc-val { font-size: 26px; font-weight: 300; font-variant-numeric: tabular-nums; color: var(--text); word-break: break-all; }
-.calc-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 5px; }
-.cb {
-  padding: 9px 4px; background: var(--surface2); border: 1px solid var(--border);
-  border-radius: 6px; color: var(--text); font-size: 13px; font-weight: 500;
-  cursor: pointer; transition: all 0.08s; text-align: center;
-}
+.calc-val { font-size: 26px; font-weight: 300; font-variant-numeric: tabular-nums; word-break: break-all; }
+.calc-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 5px; }
+.cb { padding: 9px 4px; background: var(--surface2); border: 1px solid var(--border); border-radius: 6px; color: var(--text); font-size: 13px; font-weight: 500; cursor: pointer; transition: all 0.08s; text-align: center; }
 .cb:hover { background: var(--border); }
 .cb:active { transform: scale(0.94); }
 .cb.op { color: var(--accent); font-weight: 700; }
@@ -273,134 +218,93 @@ label { font-size: 11px; color: var(--text2); display: block; margin-bottom: 3px
 .cb.eq { background: var(--accent); color: #fff; border-color: var(--accent); }
 .cb.eq:hover { background: var(--accent2); }
 .cb.dbl { grid-column: span 2; }
-
-/* ── YOUTUBE ── */
+/* YOUTUBE */
 .yt-controls { display: flex; gap: 6px; margin-bottom: 8px; }
 .yt-url { flex: 1; }
 .yt-frame { width: 100%; aspect-ratio: 16/9; border-radius: 8px; border: none; background: #000; }
-.yt-empty {
-  width: 100%; aspect-ratio: 16/9; background: var(--surface2);
-  border-radius: 8px; display: flex; align-items: center; justify-content: center;
-  color: var(--text2); font-size: 13px; border: 2px dashed var(--border);
-}
-
-/* ── NAME PICKER ── */
-.picker-result {
-  font-size: clamp(18px, 4vw, 32px); font-weight: 700;
-  color: var(--accent); text-align: center;
-  min-height: 50px; padding: 8px 12px;
-  background: var(--surface2); border-radius: 8px;
-  display: flex; align-items: center; justify-content: center;
-  word-break: break-word; margin-bottom: 8px;
-}
+.yt-empty { width: 100%; aspect-ratio: 16/9; background: var(--surface2); border-radius: 8px; display: flex; align-items: center; justify-content: center; color: var(--text2); font-size: 13px; border: 2px dashed var(--border); }
+/* NAME PICKER */
+.picker-result { font-size: clamp(18px,4vw,32px); font-weight: 700; color: var(--accent); text-align: center; min-height: 50px; padding: 8px 12px; background: var(--surface2); border-radius: 8px; display: flex; align-items: center; justify-content: center; word-break: break-word; margin-bottom: 8px; }
 .picker-result.spinning { animation: spin-pick 0.1s infinite; }
 @keyframes spin-pick { 0%,100%{opacity:1}50%{opacity:0.45} }
-.picker-names {
-  min-height: 80px; resize: vertical;
-  font-size: 13px; margin-top: 6px; padding: 8px;
-}
+.picker-names { min-height: 80px; resize: vertical; font-size: 13px; margin-top: 6px; padding: 8px; }
 .picker-meta { font-size: 11px; color: var(--text2); text-align: right; margin-top: 3px; }
-
-/* ── NOISE METER ── */
-.noise-bars {
-  display: flex; align-items: flex-end;
-  justify-content: center; gap: 3px;
-  height: 70px; margin: 8px 0;
-}
+/* NOISE */
+.noise-bars { display: flex; align-items: flex-end; justify-content: center; gap: 3px; height: 70px; margin: 8px 0; }
 .n-bar { width: 11px; background: var(--success); border-radius: 3px 3px 0 0; min-height: 3px; transition: height 0.1s; }
 .n-bar.m { background: var(--warning); }
 .n-bar.h { background: var(--danger); }
-.noise-pct { font-size: 28px; font-weight: 300; text-align: center; color: var(--text); }
+.noise-pct { font-size: 28px; font-weight: 300; text-align: center; }
 .noise-status { font-size: 12px; color: var(--text2); text-align: center; margin-top: 4px; }
 .noise-thresh { display: flex; align-items: center; gap: 8px; margin-top: 8px; font-size: 11px; color: var(--text2); }
 .noise-thresh input[type="range"] { flex: 1; accent-color: var(--accent); }
-.mic-btn {
-  width: 100%; padding: 7px; background: var(--surface2);
-  border: 1px solid var(--border); border-radius: 6px;
-  color: var(--text); cursor: pointer; font-size: 12px; transition: all 0.15s;
-}
+.mic-btn { width: 100%; padding: 7px; background: var(--surface2); border: 1px solid var(--border); border-radius: 6px; color: var(--text); cursor: pointer; font-size: 12px; transition: all 0.15s; }
 .mic-btn.on { background: var(--danger); color: #fff; border-color: var(--danger); }
-
-/* ── QR ── */
+/* QR */
 .qr-box { display: flex; justify-content: center; padding: 12px; background: #fff; border-radius: 8px; margin-top: 8px; }
 .qr-empty { text-align: center; padding: 16px; color: var(--text2); font-size: 12px; }
-
-/* ── WEBCLIP ── */
+/* WEBCLIP */
 .wc-frame { width: 100%; height: 280px; border: 1px solid var(--border); border-radius: 8px; background: #fff; }
-
-/* ── DICE / RANDOM ── */
-.big-result {
-  font-size: clamp(36px, 9vw, 80px); font-weight: 200;
-  color: var(--accent); text-align: center; line-height: 1;
-  min-height: 80px; display: flex; align-items: center; justify-content: center;
-  margin-bottom: 10px;
-}
+/* DICE / RANDOM */
+.big-result { font-size: clamp(36px,9vw,80px); font-weight: 200; color: var(--accent); text-align: center; line-height: 1; min-height: 80px; display: flex; align-items: center; justify-content: center; margin-bottom: 10px; }
 .dice-types { display: flex; flex-wrap: wrap; gap: 5px; justify-content: center; margin-bottom: 8px; }
-.d-btn {
-  padding: 5px 10px; background: var(--surface2); border: 1px solid var(--border);
-  border-radius: 6px; color: var(--text2); cursor: pointer;
-  font-size: 12px; font-weight: 700; transition: all 0.1s;
-}
+.d-btn { padding: 5px 10px; background: var(--surface2); border: 1px solid var(--border); border-radius: 6px; color: var(--text2); cursor: pointer; font-size: 12px; font-weight: 700; transition: all 0.1s; }
 .d-btn:hover, .d-btn.on { background: var(--accent); color: #fff; border-color: var(--accent); }
 .dice-count-row { display: flex; align-items: center; gap: 8px; justify-content: center; margin-bottom: 8px; font-size: 12px; color: var(--text2); }
 .dice-count-row input { width: 50px; text-align: center; }
 .rand-range { display: flex; align-items: center; gap: 8px; justify-content: center; margin-bottom: 8px; font-size: 12px; color: var(--text2); }
 .rand-range input { width: 64px; text-align: center; }
-
-/* ── PERIOD CONFIG ── */
+/* PERIOD */
 .period-name-disp { font-size: 11px; font-weight: 700; color: var(--accent); text-align: center; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 4px; }
-details > summary { cursor: pointer; font-size: 11px; color: var(--text2); margin-top: 10px; }
+.period-next { text-align: center; font-size: 11px; color: var(--text2); margin-bottom: 6px; min-height: 16px; }
+/* TOGGLE BUTTONS */
+.mode-row { display: flex; gap: 4px; margin-bottom: 10px; }
+.toggle-btn { flex: 1; padding: 5px 8px; border-radius: 6px; border: 1px solid var(--border); background: var(--surface2); color: var(--text2); font-size: 11px; font-weight: 600; cursor: pointer; transition: all 0.12s; text-align: center; }
+.toggle-btn:hover { border-color: var(--accent); color: var(--accent); }
+.toggle-btn.on { background: var(--accent); color: #fff; border-color: var(--accent); }
+.toggle-btn.sm { flex: 0 0 auto; padding: 4px 8px; font-size: 10px; }
+/* DAY TABS */
+.day-tabs { display: flex; gap: 4px; flex-wrap: wrap; margin: 6px 0; }
+/* SCHEDULE EDITOR */
+.sched-edit-list { display: flex; flex-direction: column; gap: 4px; margin: 6px 0; }
+.sched-row { display: grid; grid-template-columns: 1fr 74px 10px 74px 22px; gap: 4px; align-items: center; }
+.sched-row input[type="text"] { font-size: 11px; padding: 4px 6px; }
+.sched-row input[type="time"] { font-size: 11px; padding: 4px 6px; }
+.sched-sep { font-size: 10px; color: var(--text2); text-align: center; }
+.sched-del { background: none; border: none; color: var(--text2); cursor: pointer; font-size: 12px; padding: 0; opacity: 0.45; transition: opacity 0.1s; }
+.sched-del:hover { opacity: 1; color: var(--danger); }
+.sched-empty { text-align: center; padding: 12px 8px; color: var(--text2); font-size: 11px; background: var(--surface2); border-radius: 6px; border: 1px dashed var(--border); }
+.copy-day-btn { font-size: 10px; padding: 3px 7px; background: var(--surface2); border: 1px solid var(--border); color: var(--text2); border-radius: 4px; cursor: pointer; transition: all 0.1s; }
+.copy-day-btn:hover { background: var(--accent); color: #fff; border-color: var(--accent); }
+/* DETAILS */
+details > summary { cursor: pointer; font-size: 11px; color: var(--text2); margin-top: 10px; list-style: none; display: flex; align-items: center; gap: 4px; }
+details > summary::before { content: '\25B6'; font-size: 8px; transition: transform 0.15s; }
+details[open] > summary::before { transform: rotate(90deg); }
 .config-block { display: flex; flex-direction: column; gap: 6px; margin-top: 8px; }
-
-/* ── ADD WIDGET MODAL ── */
-#wmodal {
-  position: fixed; inset: 0; z-index: 500;
-  background: rgba(0,0,0,0.55); display: flex;
-  align-items: center; justify-content: center;
-  opacity: 0; pointer-events: none; transition: opacity 0.18s;
-}
+/* MODAL */
+#wmodal { position: fixed; inset: 0; z-index: 500; background: rgba(0,0,0,0.55); display: flex; align-items: center; justify-content: center; opacity: 0; pointer-events: none; transition: opacity 0.18s; }
 #wmodal.open { opacity: 1; pointer-events: all; }
-.wmodal-inner {
-  background: var(--surface); border-radius: 16px; padding: 22px;
-  width: 90vw; max-width: 540px; max-height: 80vh;
-  overflow-y: auto; box-shadow: 0 24px 64px rgba(0,0,0,0.35);
-}
+.wmodal-inner { background: var(--surface); border-radius: 16px; padding: 22px; width: 90vw; max-width: 540px; max-height: 80vh; overflow-y: auto; box-shadow: 0 24px 64px rgba(0,0,0,0.35); }
 .wmodal-inner h2 { font-size: 16px; margin-bottom: 14px; }
 .wcard-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px,1fr)); gap: 8px; }
-.wcard {
-  background: var(--surface2); border: 1px solid var(--border);
-  border-radius: 10px; padding: 12px 8px; cursor: pointer;
-  text-align: center; transition: all 0.12s;
-}
-.wcard:hover { border-color: var(--accent); background: color-mix(in srgb, var(--accent) 8%, var(--surface2)); }
+.wcard { background: var(--surface2); border: 1px solid var(--border); border-radius: 10px; padding: 12px 8px; cursor: pointer; text-align: center; transition: all 0.12s; }
+.wcard:hover { border-color: var(--accent); }
 .wcard .wc-icon { font-size: 22px; margin-bottom: 5px; }
-.wcard .wc-label { font-size: 11px; font-weight: 700; color: var(--text); }
+.wcard .wc-label { font-size: 11px; font-weight: 700; }
 .wcard .wc-desc { font-size: 10px; color: var(--text2); margin-top: 2px; }
 .modal-close { display: block; margin-top: 14px; padding: 8px; width: 100%; background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; cursor: pointer; color: var(--text); font-size: 13px; }
 .modal-close:hover { background: var(--border); }
-
-/* ── SCROLLBAR ── */
 ::-webkit-scrollbar { width: 5px; height: 5px; }
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
-
-/* ── DROP ZONE ── */
-#drop-hint {
-  grid-column: 1 / -1; min-height: 80px;
-  border: 2px dashed var(--border); border-radius: var(--radius);
-  display: flex; align-items: center; justify-content: center;
-  color: var(--text2); font-size: 13px;
-  cursor: pointer; transition: all 0.15s;
-}
+#drop-hint { grid-column: 1/-1; min-height: 80px; border: 2px dashed var(--border); border-radius: var(--radius); display: flex; align-items: center; justify-content: center; color: var(--text2); font-size: 13px; cursor: pointer; transition: all 0.15s; }
 #drop-hint:hover { border-color: var(--accent); color: var(--accent); }
 </style>
 </head>
 <body>
-
-<!-- HEADER -->
 <div id="header">
-  <span id="header-title">🖥 Teacher Dashboard</span>
-  <button class="hdr-btn" id="add-btn">＋ Add Widget</button>
+  <span id="header-title">&#x1F5A5; Teacher Dashboard</span>
+  <button class="hdr-btn" id="add-btn">&#xFF0B; Add Widget</button>
   <div class="hdr-sep"></div>
   <div class="profile-wrap">
     <span>Layout:</span>
@@ -410,19 +314,15 @@ details > summary { cursor: pointer; font-size: 11px; color: var(--text2); margi
     <button class="prof-btn" data-p="3">4</button>
   </div>
   <div class="hdr-sep"></div>
-  <button class="hdr-btn" id="lock-btn">🔓 Lock</button>
+  <button class="hdr-btn" id="lock-btn">&#x1F513; Lock</button>
   <div id="header-spacer"></div>
-  <button class="hdr-btn" id="theme-btn">🌙 Dark</button>
-  <button class="hdr-btn" id="contrast-btn">◐ Contrast</button>
-  <button class="hdr-btn" id="fs-btn">⛶ Fullscreen</button>
+  <button class="hdr-btn" id="theme-btn">&#x1F319; Dark</button>
+  <button class="hdr-btn" id="contrast-btn">&#x25D0; Contrast</button>
+  <button class="hdr-btn" id="fs-btn">&#x26F6; Fullscreen</button>
 </div>
-
-<!-- GRID -->
 <div id="grid">
-  <div id="drop-hint">＋ Click "Add Widget" to get started</div>
+  <div id="drop-hint">&#xFF0B; Click &ldquo;Add Widget&rdquo; to get started</div>
 </div>
-
-<!-- ADD WIDGET MODAL -->
 <div id="wmodal">
   <div class="wmodal-inner">
     <h2>Add Widget</h2>
@@ -430,980 +330,579 @@ details > summary { cursor: pointer; font-size: 11px; color: var(--text2); margi
     <button class="modal-close" id="modal-close">Cancel</button>
   </div>
 </div>
-
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <script>
-// ════════════════════════════════════════
-// DEFINITIONS
-// ════════════════════════════════════════
 const DEFS = [
-  { type:'clock',     icon:'🕐', label:'Clock',           desc:'Live clock & date',       size:1 },
-  { type:'period',    icon:'📅', label:'Period Countdown', desc:'Counts down to bell',     size:2 },
-  { type:'timer',     icon:'⏳', label:'Timer',            desc:'Countdown with alert',    size:2 },
-  { type:'stopwatch', icon:'⏱', label:'Stopwatch',        desc:'Lap stopwatch',           size:1 },
-  { type:'pomodoro',  icon:'🍅', label:'Pomodoro',         desc:'25/5 focus cycles',       size:2 },
-  { type:'notes',     icon:'📝', label:'Notes',            desc:'Freeform scratch pad',    size:2 },
-  { type:'checklist', icon:'☑',  label:'Checklist',        desc:'Agenda & task list',      size:2 },
-  { type:'calculator',icon:'🔢', label:'Calculator',       desc:'Standard calculator',     size:2 },
-  { type:'youtube',   icon:'▶',  label:'YouTube Player',   desc:'Embed any video',         size:3 },
-  { type:'picker',    icon:'🎯', label:'Name Picker',      desc:'Random student selector', size:2 },
-  { type:'noise',     icon:'🔊', label:'Noise Meter',      desc:'Mic volume monitor',      size:2 },
-  { type:'qrcode',    icon:'📱', label:'QR Code',          desc:'Generate QR from text',   size:1 },
-  { type:'webclip',   icon:'🌐', label:'Web Clip',         desc:'Embed any webpage',       size:3 },
-  { type:'dice',      icon:'🎲', label:'Dice Roller',      desc:'Roll any dice type',      size:1 },
-  { type:'random',    icon:'🔀', label:'Random Number',    desc:'Random number range',     size:1 },
+  { type:'clock',     icon:'&#x1F550;', label:'Clock',           desc:'Live clock & date',          size:1 },
+  { type:'period',    icon:'&#x1F4C5;', label:'Period Countdown', desc:'Full daily/weekly schedule', size:2 },
+  { type:'timer',     icon:'&#x23F3;',  label:'Timer',            desc:'Countdown with alert',       size:2 },
+  { type:'stopwatch', icon:'&#x23F1;',  label:'Stopwatch',        desc:'Lap stopwatch',              size:1 },
+  { type:'pomodoro',  icon:'&#x1F345;', label:'Pomodoro',         desc:'Focus cycles, configurable', size:2 },
+  { type:'notes',     icon:'&#x1F4DD;', label:'Notes',            desc:'Freeform scratch pad',       size:2 },
+  { type:'checklist', icon:'&#x2611;',  label:'Checklist',        desc:'Class agenda & tasks',       size:2 },
+  { type:'calculator',icon:'&#x1F522;', label:'Calculator',       desc:'Standard calculator',        size:2 },
+  { type:'youtube',   icon:'&#x25B6;',  label:'YouTube Player',   desc:'Embed any video',            size:3 },
+  { type:'picker',    icon:'&#x1F3AF;', label:'Name Picker',      desc:'Random student selector',    size:2 },
+  { type:'noise',     icon:'&#x1F50A;', label:'Noise Meter',      desc:'Mic volume monitor',         size:2 },
+  { type:'qrcode',    icon:'&#x1F4F1;', label:'QR Code',          desc:'Generate QR from text',      size:1 },
+  { type:'webclip',   icon:'&#x1F310;', label:'Web Clip',         desc:'Embed any webpage',          size:3 },
+  { type:'dice',      icon:'&#x1F3B2;', label:'Dice Roller',      desc:'Roll any dice type',         size:1 },
+  { type:'random',    icon:'&#x1F500;', label:'Random Number',    desc:'Random number range',        size:1 },
 ];
 
-// ════════════════════════════════════════
-// STATE
-// ════════════════════════════════════════
 let S = {
-  theme: 'light',
-  locked: false,
-  activeProfile: 0,
-  profiles: [
-    { widgets: [] },
-    { widgets: [] },
-    { widgets: [] },
-    { widgets: [] },
-  ]
+  theme: 'light', locked: false, activeProfile: 0,
+  profiles: [{ widgets:[] },{ widgets:[] },{ widgets:[] },{ widgets:[] }]
 };
 
-function loadS() {
-  try {
-    const raw = localStorage.getItem('tdash-v3');
-    if (raw) S = { ...S, ...JSON.parse(raw) };
-  } catch(e) {}
-}
-function saveS() {
-  try { localStorage.setItem('tdash-v3', JSON.stringify(S)); } catch(e) {}
-}
+function loadS() { try { const r=localStorage.getItem('tdash-v4'); if(r) S={...S,...JSON.parse(r)}; } catch(e){} }
+function saveS() { try { localStorage.setItem('tdash-v4',JSON.stringify(S)); } catch(e){} }
 function prof() { return S.profiles[S.activeProfile]; }
 
-// ════════════════════════════════════════
-// WIDGET ID / CLEANUP
-// ════════════════════════════════════════
-let _uid = 1;
-function uid() { return 'w' + (_uid++) + '_' + (Date.now() % 1e8); }
-const cleanups = {};
-function cleanup(id) { if (cleanups[id]) { cleanups[id](); delete cleanups[id]; } }
+let _uid=1;
+function uid() { return 'w'+(_uid++)+'_'+(Date.now()%1e8); }
+const cleanups={};
+function cleanup(id) { if(cleanups[id]){ cleanups[id](); delete cleanups[id]; } }
 function g(id) { return document.getElementById(id); }
 function esc(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function fmt2(n) { return String(Math.floor(Math.abs(+n))).padStart(2,'0'); }
 
-// ════════════════════════════════════════
-// BUILD WIDGET ELEMENT
-// ════════════════════════════════════════
+// ── BUILD WIDGET ──
 function buildWidget(w) {
-  const def = DEFS.find(d => d.type === w.type);
-  if (!def) return null;
-
-  const el = document.createElement('div');
-  el.className = 'widget';
-  el.dataset.id = w.id;
-  el.dataset.type = w.type;
-  el.dataset.size = w.size;
-  el.draggable = !S.locked;
-
-  el.innerHTML = `
+  const def=DEFS.find(d=>d.type===w.type); if(!def) return null;
+  const el=document.createElement('div');
+  el.className='widget'; el.dataset.id=w.id; el.dataset.type=w.type; el.dataset.size=w.size; el.draggable=!S.locked;
+  el.innerHTML=`
     <div class="wh">
       <span class="wh-icon">${def.icon}</span>
-      <span class="wh-title" title="Double-click to rename">${esc(w.title || def.label)}</span>
+      <span class="wh-title" title="Double-click to rename">${esc(w.title||def.label)}</span>
       <div class="wh-controls">
         ${[1,2,3,4].map(n=>`<button class="wc ${w.size===n?'on':''}" data-sz="${n}" title="Width ${n}">${n}</button>`).join('')}
-        <button class="wc rm" title="Remove">✕</button>
+        <button class="wc rm" title="Remove">&#x2715;</button>
       </div>
     </div>
-    <div class="wb" id="wb-${w.id}"></div>`;
+    <div class="wb" id="wb-${w.id}"></div>
+    <div class="resize-handle" title="Drag to resize"></div>`;
 
-  // Size buttons
-  el.querySelectorAll('[data-sz]').forEach(b => {
-    b.addEventListener('click', () => {
-      w.size = +b.dataset.sz;
-      el.dataset.size = w.size;
-      el.querySelectorAll('[data-sz]').forEach(x => x.classList.toggle('on', +x.dataset.sz === w.size));
+  el.querySelectorAll('[data-sz]').forEach(b=>{
+    b.addEventListener('click',()=>{
+      w.size=+b.dataset.sz; el.dataset.size=w.size;
+      el.querySelectorAll('[data-sz]').forEach(x=>x.classList.toggle('on',+x.dataset.sz===w.size));
       saveS();
     });
   });
-
-  // Remove
-  el.querySelector('.rm').addEventListener('click', () => {
-    if (!confirm('Remove this widget?')) return;
-    cleanup(w.id);
-    prof().widgets = prof().widgets.filter(x => x.id !== w.id);
-    el.remove();
-    saveS();
-    updateDropHint();
+  el.querySelector('.rm').addEventListener('click',()=>{
+    if(!confirm('Remove this widget?')) return;
+    cleanup(w.id); prof().widgets=prof().widgets.filter(x=>x.id!==w.id);
+    el.remove(); saveS(); updateDropHint();
   });
-
-  // Rename
-  const titleEl = el.querySelector('.wh-title');
-  titleEl.addEventListener('dblclick', () => {
-    if (S.locked) return;
-    titleEl.contentEditable = 'true';
-    titleEl.focus();
-    const r = document.createRange(); r.selectNodeContents(titleEl);
-    const sel = window.getSelection(); sel.removeAllRanges(); sel.addRange(r);
+  const titleEl=el.querySelector('.wh-title');
+  titleEl.addEventListener('dblclick',()=>{
+    if(S.locked) return; titleEl.contentEditable='true'; titleEl.focus();
+    const r=document.createRange(); r.selectNodeContents(titleEl);
+    const sel=window.getSelection(); sel.removeAllRanges(); sel.addRange(r);
   });
-  titleEl.addEventListener('blur', () => {
-    titleEl.contentEditable = 'false';
-    w.title = titleEl.textContent.trim() || def.label;
-    saveS();
-  });
-  titleEl.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); titleEl.blur(); } });
-
-  // Drag
-  setupDrag(el);
-
-  // Init content
-  setTimeout(() => initWidget(w), 0);
-
+  titleEl.addEventListener('blur',()=>{ titleEl.contentEditable='false'; w.title=titleEl.textContent.trim()||def.label; saveS(); });
+  titleEl.addEventListener('keydown',e=>{ if(e.key==='Enter'){e.preventDefault();titleEl.blur();} });
+  setupDrag(el); setupResize(el,w);
+  setTimeout(()=>initWidget(w),0);
   return el;
 }
 
-// ════════════════════════════════════════
-// DRAG & DROP
-// ════════════════════════════════════════
-let dragSrc = null;
-
+// ── DRAG & DROP (reorder) ──
+let dragSrc=null;
 function setupDrag(el) {
-  el.addEventListener('dragstart', e => {
-    if (S.locked) { e.preventDefault(); return; }
-    dragSrc = el;
-    el.classList.add('dragging');
-    e.dataTransfer.effectAllowed = 'move';
-    e.dataTransfer.setData('text/plain', el.dataset.id);
-  });
-  el.addEventListener('dragend', () => {
-    el.classList.remove('dragging');
-    document.querySelectorAll('.drop-target').forEach(x => x.classList.remove('drop-target'));
-    dragSrc = null;
-  });
-  el.addEventListener('dragover', e => {
-    e.preventDefault();
-    if (dragSrc && dragSrc !== el) el.classList.add('drop-target');
-    e.dataTransfer.dropEffect = 'move';
-  });
-  el.addEventListener('dragleave', () => el.classList.remove('drop-target'));
-  el.addEventListener('drop', e => {
-    e.preventDefault();
-    el.classList.remove('drop-target');
-    if (!dragSrc || dragSrc === el) return;
-    const ws = prof().widgets;
-    const si = ws.findIndex(x => x.id === dragSrc.dataset.id);
-    const ti = ws.findIndex(x => x.id === el.dataset.id);
-    if (si < 0 || ti < 0) return;
-    const [item] = ws.splice(si, 1);
-    ws.splice(ti, 0, item);
-    saveS();
-    const grid = g('grid');
-    if (si < ti) grid.insertBefore(dragSrc, el.nextSibling);
-    else grid.insertBefore(dragSrc, el);
+  el.addEventListener('dragstart',e=>{ if(S.locked){e.preventDefault();return;} dragSrc=el; el.classList.add('dragging'); e.dataTransfer.effectAllowed='move'; e.dataTransfer.setData('text/plain',el.dataset.id); });
+  el.addEventListener('dragend',()=>{ el.classList.remove('dragging'); document.querySelectorAll('.drop-target').forEach(x=>x.classList.remove('drop-target')); dragSrc=null; });
+  el.addEventListener('dragover',e=>{ e.preventDefault(); if(dragSrc&&dragSrc!==el) el.classList.add('drop-target'); e.dataTransfer.dropEffect='move'; });
+  el.addEventListener('dragleave',()=>el.classList.remove('drop-target'));
+  el.addEventListener('drop',e=>{ e.preventDefault(); el.classList.remove('drop-target'); if(!dragSrc||dragSrc===el) return;
+    const ws=prof().widgets; const si=ws.findIndex(x=>x.id===dragSrc.dataset.id); const ti=ws.findIndex(x=>x.id===el.dataset.id);
+    if(si<0||ti<0) return; const [item]=ws.splice(si,1); ws.splice(ti,0,item); saveS();
+    const grid=g('grid'); if(si<ti) grid.insertBefore(dragSrc,el.nextSibling); else grid.insertBefore(dragSrc,el);
   });
 }
 
-// ════════════════════════════════════════
-// RENDER
-// ════════════════════════════════════════
+// ── DRAG-AND-SNAP RESIZE ──
+let _resizing=null;
+function getGridInfo() {
+  const grid=g('grid'); const gs=getComputedStyle(grid);
+  const cols=gs.gridTemplateColumns.split(' ').filter(Boolean); const nc=cols.length;
+  const gridPad=parseFloat(gs.paddingLeft)+parseFloat(gs.paddingRight);
+  const gridW=grid.clientWidth-gridPad;
+  const gap=parseFloat(gs.columnGap||12);
+  const cw=(gridW-gap*(nc-1))/nc;
+  return {nc,gap,cw};
+}
+function setupResize(el,w) {
+  const handle=el.querySelector('.resize-handle'); if(!handle) return;
+  const start=(clientX)=>{ if(S.locked) return; const gi=getGridInfo(); _resizing={el,w,startX:clientX,startSpan:w.size,...gi}; document.body.classList.add('resizing'); };
+  handle.addEventListener('mousedown',e=>{ e.preventDefault(); e.stopPropagation(); start(e.clientX); });
+  handle.addEventListener('touchstart',e=>{ e.preventDefault(); e.stopPropagation(); start(e.touches[0].clientX); },{passive:false});
+}
+function applyResize(clientX) {
+  const {el,w,startX,startSpan,nc,gap,cw}=_resizing;
+  const delta=clientX-startX;
+  const newSpan=Math.max(1,Math.min(nc,Math.round(startSpan+delta/(cw+gap))));
+  if(newSpan!==+el.dataset.size) { w.size=newSpan; el.dataset.size=newSpan; el.querySelectorAll('[data-sz]').forEach(b=>b.classList.toggle('on',+b.dataset.sz===newSpan)); }
+}
+function endResize() { if(!_resizing) return; saveS(); document.body.classList.remove('resizing'); _resizing=null; }
+document.addEventListener('mousemove',e=>{ if(_resizing) applyResize(e.clientX); });
+document.addEventListener('touchmove',e=>{ if(_resizing) applyResize(e.touches[0].clientX); },{passive:false});
+document.addEventListener('mouseup',endResize);
+document.addEventListener('touchend',endResize);
+
+// ── RENDER ──
 function renderProfile() {
-  const grid = g('grid');
-  // Remove current widgets
-  grid.querySelectorAll('.widget').forEach(el => { cleanup(el.dataset.id); el.remove(); });
-  // Build
-  prof().widgets.forEach(w => {
-    const el = buildWidget(w);
-    if (el) grid.insertBefore(el, g('drop-hint'));
-  });
+  const grid=g('grid'); grid.querySelectorAll('.widget').forEach(el=>{cleanup(el.dataset.id);el.remove();});
+  prof().widgets.forEach(w=>{ const el=buildWidget(w); if(el) grid.insertBefore(el,g('drop-hint')); });
   updateDropHint();
 }
-
-function updateDropHint() {
-  const hint = g('drop-hint');
-  if (!hint) return;
-  hint.style.display = prof().widgets.length === 0 ? 'flex' : 'none';
-}
-
+function updateDropHint() { const h=g('drop-hint'); if(h) h.style.display=prof().widgets.length===0?'flex':'none'; }
 function addWidget(type) {
-  const def = DEFS.find(d => d.type === type);
-  if (!def) return;
-  const w = { id: uid(), type, size: def.size, title: def.label, state: {} };
-  prof().widgets.push(w);
-  saveS();
-  const el = buildWidget(w);
-  if (el) g('grid').insertBefore(el, g('drop-hint'));
-  updateDropHint();
+  const def=DEFS.find(d=>d.type===type); if(!def) return;
+  const w={id:uid(),type,size:def.size,title:def.label,state:{}};
+  prof().widgets.push(w); saveS();
+  const el=buildWidget(w); if(el) g('grid').insertBefore(el,g('drop-hint')); updateDropHint();
 }
-
-// ════════════════════════════════════════
-// WIDGET INIT DISPATCH
-// ════════════════════════════════════════
 function initWidget(w) {
-  const body = g('wb-' + w.id);
-  if (!body) return;
-  const fn = {
-    clock: initClock, period: initPeriod, timer: initTimer,
-    stopwatch: initStopwatch, pomodoro: initPomodoro,
-    notes: initNotes, checklist: initChecklist, calculator: initCalc,
-    youtube: initYoutube, picker: initPicker, noise: initNoise,
-    qrcode: initQR, webclip: initWebClip, dice: initDice, random: initRandom,
-  }[w.type];
-  if (fn) fn(w, body);
+  const body=g('wb-'+w.id); if(!body) return;
+  const fn={clock:initClock,period:initPeriod,timer:initTimer,stopwatch:initStopwatch,pomodoro:initPomodoro,notes:initNotes,checklist:initChecklist,calculator:initCalc,youtube:initYoutube,picker:initPicker,noise:initNoise,qrcode:initQR,webclip:initWebClip,dice:initDice,random:initRandom}[w.type];
+  if(fn) fn(w,body);
 }
 
-// ════════════════════════════════════════
-// CLOCK
-// ════════════════════════════════════════
-function initClock(w, body) {
-  body.innerHTML = `
-    <div class="clock-time" id="ct-${w.id}"></div>
-    <div class="clock-date" id="cd-${w.id}"></div>`;
-  function tick() {
-    const now = new Date();
-    const ct = g('ct-'+w.id), cd = g('cd-'+w.id);
-    if (!ct) return;
-    ct.textContent = now.toLocaleTimeString([], {hour:'2-digit',minute:'2-digit',second:'2-digit'});
-    cd.textContent = now.toLocaleDateString([], {weekday:'long',year:'numeric',month:'long',day:'numeric'});
+// ── CLOCK ──
+function initClock(w,body) {
+  body.innerHTML=`<div class="clock-time" id="ct-${w.id}"></div><div class="clock-date" id="cd-${w.id}"></div>`;
+  function tick() { const now=new Date(); const ct=g('ct-'+w.id),cd=g('cd-'+w.id); if(!ct) return; ct.textContent=now.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit',second:'2-digit'}); cd.textContent=now.toLocaleDateString([],{weekday:'long',year:'numeric',month:'long',day:'numeric'}); }
+  tick(); const iv=setInterval(tick,1000); cleanups[w.id]=()=>clearInterval(iv);
+}
+
+// ── PERIOD COUNTDOWN (full schedule) ──
+function initPeriod(w,body) {
+  const defaults={mode:'single',name:'Period 1',sh:8,sm:0,eh:8,em:50,daily:[],weeklyMode:false,weekly:{1:[],2:[],3:[],4:[],5:[]}};
+  w.state=Object.assign({},defaults,w.state||{});
+  if(!w.state.weekly) w.state.weekly={};
+  for(let d=1;d<=5;d++) { if(!Array.isArray(w.state.weekly[d])) w.state.weekly[d]=[]; }
+  if(!Array.isArray(w.state.daily)) w.state.daily=[];
+  const s=w.state;
+  const fmtT=(h,m)=>fmt2(h)+':'+fmt2(m);
+
+  function getSchedForDay(dow) {
+    if(s.weeklyMode){ const ds=s.weekly[dow]; if(Array.isArray(ds)&&ds.length>0) return ds; }
+    return s.daily;
   }
-  tick();
-  const iv = setInterval(tick, 1000);
-  cleanups[w.id] = () => clearInterval(iv);
-}
+  function getPeriodStatus(sch) {
+    if(!sch||!sch.length) return {type:'empty'};
+    const now=new Date(); const nowM=now.getHours()*60+now.getMinutes()+now.getSeconds()/60;
+    const fm=sch[0].sh*60+sch[0].sm;
+    if(nowM<fm) return {type:'before',next:sch[0],secsUntil:Math.round((fm-nowM)*60)};
+    for(let i=0;i<sch.length;i++){
+      const p=sch[i],startM=p.sh*60+p.sm,endM=p.eh*60+p.em;
+      if(nowM>=startM&&nowM<endM){ const remSecs=Math.max(0,Math.round((endM-nowM)*60)); return {type:'active',period:p,index:i,remSecs,totalSecs:(endM-startM)*60,next:sch[i+1]||null}; }
+      if(i<sch.length-1){ const nm=sch[i+1].sh*60+sch[i+1].sm; if(nowM>=endM&&nowM<nm){ return {type:'break',prev:p,next:sch[i+1],secsUntil:Math.round((nm-nowM)*60),totalPassSecs:(nm-endM)*60}; } }
+    }
+    return {type:'after'};
+  }
 
-// ════════════════════════════════════════
-// PERIOD COUNTDOWN
-// ════════════════════════════════════════
-function initPeriod(w, body) {
-  w.state = w.state || { name:'Period 1', sh:8, sm:0, eh:8, em:50 };
-  const s = w.state;
-  const fmt2 = n => String(n).padStart(2,'0');
-
-  body.innerHTML = `
-    <div class="period-name-disp" id="pn-${w.id}">${esc(s.name)}</div>
+  const dayNames=['','Mon','Tue','Wed','Thu','Fri'];
+  body.innerHTML=`
+    <div class="period-name-disp" id="pn-${w.id}">Loading...</div>
     <div class="big-time" id="pt-${w.id}">--:--</div>
-    <div class="prog-track"><div class="prog-fill" id="pp-${w.id}" style="width:50%;background:var(--success)"></div></div>
-    <details>
-      <summary>Configure period</summary>
+    <div class="prog-track"><div class="prog-fill" id="pp-${w.id}" style="width:0%;background:var(--success)"></div></div>
+    <div class="period-next" id="pnext-${w.id}"></div>
+    <details id="pcfg-${w.id}">
+      <summary>Configure schedule</summary>
       <div class="config-block">
-        <label>Period Name</label>
-        <input type="text" id="pname-${w.id}" value="${esc(s.name)}">
-        <label>Start time</label>
-        <input type="time" id="pstart-${w.id}" value="${fmt2(s.sh)}:${fmt2(s.sm)}">
-        <label>End time</label>
-        <input type="time" id="pend-${w.id}" value="${fmt2(s.eh)}:${fmt2(s.em)}">
-        <button class="btn btn-p sm" id="psave-${w.id}">Save</button>
+        <div class="mode-row">
+          <button class="toggle-btn${s.mode==='single'?' on':''}" data-m="single">Single Period</button>
+          <button class="toggle-btn${s.mode==='schedule'?' on':''}" data-m="schedule">Full Schedule</button>
+        </div>
+        <div id="pcsingle-${w.id}" style="${s.mode==='single'?'':'display:none'}">
+          <label>Period Name</label><input type="text" id="pname-${w.id}" value="${esc(s.name)}">
+          <label>Start time</label><input type="time" id="pstart-${w.id}" value="${fmtT(s.sh,s.sm)}">
+          <label>End time</label><input type="time" id="pend-${w.id}" value="${fmtT(s.eh,s.em)}">
+          <div class="btn-row"><button class="btn btn-p sm" id="psave-${w.id}">Save</button></div>
+        </div>
+        <div id="pcsched-${w.id}" style="${s.mode==='schedule'?'':'display:none'}">
+          <label style="display:flex;align-items:center;gap:6px;cursor:pointer;margin-bottom:4px">
+            <input type="checkbox" id="pweekly-${w.id}" ${s.weeklyMode?'checked':''} style="width:14px;height:14px;accent-color:var(--accent);flex-shrink:0">
+            Different schedule each weekday
+          </label>
+          <div class="day-tabs" id="pdaytabs-${w.id}" style="display:${s.weeklyMode?'flex':'none'}">
+            ${dayNames.slice(1).map((d,i)=>`<button class="toggle-btn sm${i===0?' on':''}" data-dayidx="${i+1}">${d}</button>`).join('')}
+            <button class="copy-day-btn" id="pcopyall-${w.id}">Copy to all days</button>
+          </div>
+          <div class="sched-edit-list" id="psched-${w.id}"></div>
+          <div class="btn-row" style="margin-top:6px">
+            <button class="btn btn-s sm" id="padd-${w.id}">+ Period</button>
+            <button class="btn btn-s sm" id="ptempl-${w.id}">Template</button>
+            <button class="btn btn-p sm" id="pschedsave-${w.id}">Save</button>
+          </div>
+        </div>
       </div>
     </details>`;
 
-  function tick() {
-    const now = new Date();
-    const start = new Date(now); start.setHours(s.sh, s.sm, 0, 0);
-    const end   = new Date(now); end.setHours(s.eh, s.em, 0, 0);
-    const totalS = (end - start) / 1000;
-    const remS   = Math.max(0, (end - now) / 1000);
-    const m = Math.floor(remS/60), sec = Math.floor(remS%60);
-    const tEl = g('pt-'+w.id), pEl = g('pp-'+w.id), nEl = g('pn-'+w.id);
-    if (!tEl) return;
-    tEl.textContent = remS <= 0 ? 'Class over' : `${fmt2(m)}:${fmt2(sec)}`;
-    tEl.className = `big-time${remS<=0?'':remS<120?' crit':remS<300?' warn':''}`;
-    if (pEl && totalS>0) {
-      pEl.style.width = (remS/totalS*100)+'%';
-      pEl.style.background = remS<120?'var(--danger)':remS<300?'var(--warning)':'var(--success)';
-    }
-    if (nEl) nEl.textContent = s.name;
+  let editingDay=1;
+  function getEditSch() { return s.weeklyMode?(s.weekly[editingDay]||(s.weekly[editingDay]=[])):s.daily; }
+  function renderSchedEdit() {
+    const list=g('psched-'+w.id); if(!list) return;
+    const sch=getEditSch();
+    if(!sch.length){ list.innerHTML='<div class="sched-empty">No periods yet. Use + Period or load a Template.</div>'; return; }
+    list.innerHTML=sch.map((p,i)=>`
+      <div class="sched-row" data-i="${i}">
+        <input type="text" class="sched-name" value="${esc(p.name)}" placeholder="Name" data-i="${i}">
+        <input type="time" class="sched-start" value="${fmtT(p.sh,p.sm)}" data-i="${i}">
+        <span class="sched-sep">&#x2192;</span>
+        <input type="time" class="sched-end" value="${fmtT(p.eh,p.em)}" data-i="${i}">
+        <button class="sched-del" data-i="${i}" title="Remove">&#x2715;</button>
+      </div>`).join('');
+    list.querySelectorAll('.sched-row').forEach(row=>{
+      const i=+row.dataset.i;
+      row.querySelector('.sched-name').addEventListener('input',e=>{getEditSch()[i].name=e.target.value;});
+      row.querySelector('.sched-start').addEventListener('change',e=>{ const [h,m]=e.target.value.split(':').map(Number); getEditSch()[i].sh=h;getEditSch()[i].sm=m; });
+      row.querySelector('.sched-end').addEventListener('change',e=>{ const [h,m]=e.target.value.split(':').map(Number); getEditSch()[i].eh=h;getEditSch()[i].em=m; });
+      row.querySelector('.sched-del').addEventListener('click',()=>{ getEditSch().splice(i,1); saveS(); renderSchedEdit(); tick(); });
+    });
   }
 
-  g('psave-'+w.id)?.addEventListener('click', () => {
-    s.name = g('pname-'+w.id)?.value||'Period';
-    const sv = g('pstart-'+w.id)?.value||'08:00';
-    const ev = g('pend-'+w.id)?.value||'08:50';
-    [s.sh,s.sm] = sv.split(':').map(Number);
-    [s.eh,s.em] = ev.split(':').map(Number);
+  body.querySelectorAll('[data-m]').forEach(btn=>{
+    btn.addEventListener('click',()=>{
+      s.mode=btn.dataset.m;
+      body.querySelectorAll('[data-m]').forEach(b=>b.classList.toggle('on',b.dataset.m===s.mode));
+      g('pcsingle-'+w.id).style.display=s.mode==='single'?'':'none';
+      g('pcsched-'+w.id).style.display=s.mode==='schedule'?'':'none';
+      saveS(); tick();
+    });
+  });
+  g('pweekly-'+w.id)?.addEventListener('change',e=>{ s.weeklyMode=e.target.checked; g('pdaytabs-'+w.id).style.display=s.weeklyMode?'flex':'none'; saveS(); renderSchedEdit(); });
+  body.querySelectorAll('[data-dayidx]').forEach(btn=>{ btn.addEventListener('click',()=>{ editingDay=+btn.dataset.dayidx; body.querySelectorAll('[data-dayidx]').forEach(b=>b.classList.toggle('on',+b.dataset.dayidx===editingDay)); renderSchedEdit(); }); });
+  g('pcopyall-'+w.id)?.addEventListener('click',()=>{
+    const src=JSON.parse(JSON.stringify(getEditSch()));
+    if(!src.length){alert('Add periods first.');return;}
+    if(!confirm('Copy this schedule to all weekdays (Mon-Fri)?')) return;
+    for(let d=1;d<=5;d++) s.weekly[d]=JSON.parse(JSON.stringify(src));
+    saveS(); renderSchedEdit(); tick();
+  });
+  g('padd-'+w.id)?.addEventListener('click',()=>{
+    const sch=getEditSch(); const last=sch[sch.length-1];
+    let sh=8,sm=0,eh=8,em=45;
+    if(last){ const sm2=last.eh*60+last.em+5; sh=Math.floor(sm2/60)%24; sm=sm2%60; const em2=sm2+45; eh=Math.floor(em2/60)%24; em=em2%60; }
+    sch.push({name:'Period '+(sch.length+1),sh,sm,eh,em}); saveS(); renderSchedEdit();
+  });
+
+  const TEMPLATES={
+    '8-Period Day (45 min)':[{name:'Period 1',sh:8,sm:0,eh:8,em:45},{name:'Period 2',sh:8,sm:50,eh:9,em:35},{name:'Period 3',sh:9,sm:40,eh:10,em:25},{name:'Period 4',sh:10,sm:30,eh:11,em:15},{name:'Lunch',sh:11,sm:20,eh:11,em:50},{name:'Period 5',sh:11,sm:55,eh:12,em:40},{name:'Period 6',sh:12,sm:45,eh:13,em:30},{name:'Period 7',sh:13,sm:35,eh:14,em:20}],
+    '4-Block Schedule (90 min)':[{name:'Block 1',sh:8,sm:0,eh:9,em:30},{name:'Block 2',sh:9,sm:40,eh:11,em:10},{name:'Lunch',sh:11,sm:10,eh:11,em:55},{name:'Block 3',sh:12,sm:0,eh:13,em:30},{name:'Block 4',sh:13,sm:40,eh:15,em:10}],
+    '7-Period Day (42 min)':[{name:'Period 1',sh:8,sm:0,eh:8,em:42},{name:'Period 2',sh:8,sm:47,eh:9,em:29},{name:'Period 3',sh:9,sm:34,eh:10,em:16},{name:'Period 4',sh:10,sm:21,eh:11,em:3},{name:'Lunch',sh:11,sm:8,eh:11,em:38},{name:'Period 5',sh:11,sm:43,eh:12,em:25},{name:'Period 6',sh:12,sm:30,eh:13,em:12}],
+    '6-Period College (50 min)':[{name:'Period 1',sh:8,sm:0,eh:8,em:50},{name:'Period 2',sh:9,sm:0,eh:9,em:50},{name:'Period 3',sh:10,sm:0,eh:10,em:50},{name:'Lunch',sh:11,sm:0,eh:11,em:50},{name:'Period 4',sh:12,sm:0,eh:12,em:50},{name:'Period 5',sh:13,sm:0,eh:13,em:50}],
+  };
+  g('ptempl-'+w.id)?.addEventListener('click',()=>{
+    const keys=Object.keys(TEMPLATES);
+    const choice=prompt('Load a schedule template:\n\n'+keys.map((k,i)=>(i+1)+'. '+k).join('\n')+'\n\nEnter a number:');
+    if(!choice) return;
+    const idx=parseInt(choice,10)-1;
+    if(idx<0||idx>=keys.length){alert('Invalid choice.');return;}
+    const tpl=JSON.parse(JSON.stringify(TEMPLATES[keys[idx]]));
+    if(s.weeklyMode) s.weekly[editingDay]=tpl; else s.daily=tpl;
+    saveS(); renderSchedEdit(); tick();
+  });
+  g('pschedsave-'+w.id)?.addEventListener('click',()=>{saveS();tick();});
+  g('psave-'+w.id)?.addEventListener('click',()=>{
+    s.name=g('pname-'+w.id)?.value||'Period';
+    const sv=g('pstart-'+w.id)?.value||'08:00'; const ev=g('pend-'+w.id)?.value||'08:50';
+    [s.sh,s.sm]=sv.split(':').map(Number); [s.eh,s.em]=ev.split(':').map(Number);
     saveS(); tick();
   });
 
-  tick();
-  const iv = setInterval(tick, 1000);
-  cleanups[w.id] = () => clearInterval(iv);
+  renderSchedEdit();
+
+  function tick() {
+    const tEl=g('pt-'+w.id),pEl=g('pp-'+w.id),nEl=g('pn-'+w.id),nextEl=g('pnext-'+w.id);
+    if(!tEl) return;
+    if(s.mode==='single'){
+      const now=new Date(),start=new Date(now),end=new Date(now);
+      start.setHours(s.sh,s.sm,0,0); end.setHours(s.eh,s.em,0,0);
+      const totalS=(end-start)/1000, remS=Math.max(0,(end-now)/1000);
+      const m=Math.floor(remS/60),sec=Math.floor(remS%60);
+      tEl.textContent=remS<=0?'Class over':`${fmt2(m)}:${fmt2(sec)}`;
+      tEl.className='big-time'+(remS<=0?'':remS<120?' crit':remS<300?' warn':'');
+      if(pEl&&totalS>0){pEl.style.width=(remS/totalS*100)+'%';pEl.style.background=remS<120?'var(--danger)':remS<300?'var(--warning)':'var(--success)';}
+      if(nEl) nEl.textContent=s.name; if(nextEl) nextEl.innerHTML=''; return;
+    }
+    const dow=new Date().getDay();
+    if(dow===0||dow===6){
+      if(nEl) nEl.textContent='Weekend';
+      tEl.textContent='No school'; tEl.className='big-time';
+      if(pEl){pEl.style.width='100%';pEl.style.background='var(--success)';}
+      if(nextEl) nextEl.innerHTML=''; return;
+    }
+    const sch=getSchedForDay(dow);
+    if(!sch||!sch.length){
+      if(nEl) nEl.textContent='No schedule';
+      tEl.textContent='--:--'; tEl.className='big-time';
+      if(pEl) pEl.style.width='0%';
+      if(nextEl) nextEl.innerHTML='Add periods in Configure'; return;
+    }
+    const st=getPeriodStatus(sch);
+    const set=(label,time,cls,pct,bg,nextHtml)=>{
+      if(nEl) nEl.textContent=label;
+      tEl.textContent=time; tEl.className='big-time'+(cls?' '+cls:'');
+      if(pEl){pEl.style.width=pct+'%';pEl.style.background=bg;}
+      if(nextEl) nextEl.innerHTML=nextHtml;
+    };
+    if(st.type==='before'){const m=Math.floor(st.secsUntil/60),sec=st.secsUntil%60;set('Before School',fmt2(m)+':'+fmt2(sec),'',0,'var(--accent)','NEXT: <strong>'+esc(st.next.name)+'</strong> @ '+fmtT(st.next.sh,st.next.sm));}
+    else if(st.type==='active'){const m=Math.floor(st.remSecs/60),sec=st.remSecs%60;const pct=st.totalSecs>0?(st.remSecs/st.totalSecs*100):0;const cls=st.remSecs<120?'crit':st.remSecs<300?'warn':'';const bg=st.remSecs<120?'var(--danger)':st.remSecs<300?'var(--warning)':'var(--success)';const nh=st.next?'NEXT: <strong>'+esc(st.next.name)+'</strong> @ '+fmtT(st.next.sh,st.next.sm):'Last period of the day';set(st.period.name,fmt2(m)+':'+fmt2(sec),cls,pct,bg,nh);}
+    else if(st.type==='break'){const m=Math.floor(st.secsUntil/60),sec=st.secsUntil%60;const pct=st.totalPassSecs>0?(st.secsUntil/st.totalPassSecs*100):50;set('Passing Period',fmt2(m)+':'+fmt2(sec),'warn',pct,'var(--warning)','NEXT: <strong>'+esc(st.next.name)+'</strong> @ '+fmtT(st.next.sh,st.next.sm));}
+    else if(st.type==='after'){set("School's Out!",'Done','',100,'var(--success)','');}
+    else{set('No schedule','--:--','',0,'var(--border)','Add periods in Configure');}
+  }
+  tick(); const iv=setInterval(tick,1000); cleanups[w.id]=()=>clearInterval(iv);
 }
 
-// ════════════════════════════════════════
-// TIMER
-// ════════════════════════════════════════
-function initTimer(w, body) {
-  w.state = w.state || { totalS:300, remS:300, running:false };
-  const s = w.state;
-  let startTime = null, iv = null, alerted = false;
-  const fmt = secs => {
-    const neg = secs < 0; secs = Math.abs(secs);
-    return (neg?'-':'') + String(Math.floor(secs/60)).padStart(2,'0') + ':' + String(secs%60).padStart(2,'0');
-  };
-
-  body.innerHTML = `
+// ── TIMER ──
+function initTimer(w,body) {
+  w.state=w.state||{totalS:300,remS:300,running:false};
+  const s=w.state; let startTime=null,iv=null,alerted=false;
+  const fmt=secs=>{ const neg=secs<0; secs=Math.abs(secs); return (neg?'-':'')+String(Math.floor(secs/60)).padStart(2,'0')+':'+String(secs%60).padStart(2,'0'); };
+  body.innerHTML=`
     <div class="big-time" id="tt-${w.id}">${fmt(s.remS)}</div>
     <div class="prog-track"><div class="prog-fill" id="tp-${w.id}" style="width:100%;background:var(--accent)"></div></div>
     <div class="timer-inputs">
-      <input type="number" class="t-inp" id="tmin-${w.id}" min="0" max="99" value="${Math.floor(s.totalS/60)}" placeholder="mm">
+      <input type="number" class="t-inp" id="tmin-${w.id}" min="0" max="99" value="${Math.floor(s.totalS/60)}">
       <span style="font-size:18px;color:var(--text2)">:</span>
-      <input type="number" class="t-inp" id="tsec-${w.id}" min="0" max="59" value="${s.totalS%60}" placeholder="ss">
+      <input type="number" class="t-inp" id="tsec-${w.id}" min="0" max="59" value="${s.totalS%60}">
     </div>
     <div class="presets">
-      ${[1,2,3,5,10,15,20,25,30,45,60].map(m=>`<button class="preset" data-m="${m}">${m}m</button>`).join('')}
+      <button class="preset pass" data-m="5" title="Passing period">5m pass</button>
+      ${[1,2,3,10,15,20,25,30,45,60].map(m=>`<button class="preset" data-m="${m}">${m}m</button>`).join('')}
     </div>
     <div class="btn-row">
-      <button class="btn btn-p sm" id="tstart-${w.id}">▶ Start</button>
-      <button class="btn btn-s sm" id="treset-${w.id}">↺ Reset</button>
+      <button class="btn btn-p sm" id="tstart-${w.id}">&#x25B6; Start</button>
+      <button class="btn btn-s sm" id="treset-${w.id}">&#x21BA; Reset</button>
     </div>`;
-
-  function updateDisp() {
-    const tEl = g('tt-'+w.id), pEl = g('tp-'+w.id);
-    if (!tEl) return;
-    tEl.textContent = fmt(s.remS);
-    const pct = s.totalS>0 ? Math.max(0, Math.min(100, s.remS/s.totalS*100)) : 0;
-    if (pEl) pEl.style.width = pct+'%';
-    const cls = s.remS<=0?'crit':s.remS<=60?'warn':'';
-    tEl.className = `big-time${cls?' '+cls:''}`;
-    if (pEl) pEl.style.background = s.remS<=0?'var(--danger)':s.remS<=60?'var(--warning)':'var(--accent)';
-  }
-
-  function tick() {
-    if (!s.running) return;
-    s.remS = s.totalS - Math.floor((Date.now()-startTime)/1000);
-    updateDisp();
-    if (s.remS <= 0 && !alerted) { alerted=true; playAlert(); stop(); }
-  }
-
-  function stop() {
-    s.running=false; s.totalS=Math.max(0,s.remS);
-    clearInterval(iv); iv=null;
-    const b=g('tstart-'+w.id); if(b) b.textContent='▶ Start';
-    saveS();
-  }
-
-  g('tstart-'+w.id)?.addEventListener('click', () => {
-    if (s.running) { stop(); return; }
-    if (s.remS <= 0) {
-      s.totalS = (+g('tmin-'+w.id)?.value||0)*60 + (+g('tsec-'+w.id)?.value||0);
-      s.remS = s.totalS; alerted=false;
-    }
-    if (s.remS <= 0) return;
-    startTime = Date.now() - (s.totalS - s.remS)*1000;
-    s.running=true; iv=setInterval(tick,500);
-    const b=g('tstart-'+w.id); if(b) b.textContent='⏸ Pause';
-    saveS();
-  });
-
-  g('treset-'+w.id)?.addEventListener('click', () => {
-    clearInterval(iv); iv=null; s.running=false;
-    s.totalS = (+g('tmin-'+w.id)?.value||5)*60 + (+g('tsec-'+w.id)?.value||0);
-    s.remS=s.totalS; alerted=false; updateDisp();
-    const b=g('tstart-'+w.id); if(b) b.textContent='▶ Start';
-    saveS();
-  });
-
-  body.querySelectorAll('.preset').forEach(b => {
-    b.addEventListener('click', () => {
-      const m=+b.dataset.m;
-      const mi=g('tmin-'+w.id), si=g('tsec-'+w.id);
-      if(mi) mi.value=m; if(si) si.value=0;
-      clearInterval(iv); iv=null; s.running=false;
-      s.totalS=m*60; s.remS=s.totalS; alerted=false; updateDisp();
-      const b2=g('tstart-'+w.id); if(b2) b2.textContent='▶ Start';
-      saveS();
-    });
-  });
-
+  function updateDisp(){const tEl=g('tt-'+w.id),pEl=g('tp-'+w.id);if(!tEl)return;tEl.textContent=fmt(s.remS);const pct=s.totalS>0?Math.max(0,Math.min(100,s.remS/s.totalS*100)):0;if(pEl)pEl.style.width=pct+'%';tEl.className='big-time'+(s.remS<=0?' crit':s.remS<=60?' warn':'');if(pEl)pEl.style.background=s.remS<=0?'var(--danger)':s.remS<=60?'var(--warning)':'var(--accent)';}
+  function tick(){if(!s.running)return;s.remS=s.totalS-Math.floor((Date.now()-startTime)/1000);updateDisp();if(s.remS<=0&&!alerted){alerted=true;playAlert();stop();}}
+  function stop(){s.running=false;s.totalS=Math.max(0,s.remS);clearInterval(iv);iv=null;const b=g('tstart-'+w.id);if(b)b.textContent='&#x25B6; Start';saveS();}
+  g('tstart-'+w.id)?.addEventListener('click',()=>{if(s.running){stop();return;}if(s.remS<=0){s.totalS=(+g('tmin-'+w.id)?.value||0)*60+(+g('tsec-'+w.id)?.value||0);s.remS=s.totalS;alerted=false;}if(s.remS<=0)return;startTime=Date.now()-(s.totalS-s.remS)*1000;s.running=true;iv=setInterval(tick,500);const b=g('tstart-'+w.id);if(b)b.textContent='&#x23F8; Pause';saveS();});
+  g('treset-'+w.id)?.addEventListener('click',()=>{clearInterval(iv);iv=null;s.running=false;s.totalS=(+g('tmin-'+w.id)?.value||5)*60+(+g('tsec-'+w.id)?.value||0);s.remS=s.totalS;alerted=false;updateDisp();const b=g('tstart-'+w.id);if(b)b.textContent='&#x25B6; Start';saveS();});
+  body.querySelectorAll('.preset').forEach(b=>{b.addEventListener('click',()=>{const m=+b.dataset.m;const mi=g('tmin-'+w.id),si=g('tsec-'+w.id);if(mi)mi.value=m;if(si)si.value=0;clearInterval(iv);iv=null;s.running=false;s.totalS=m*60;s.remS=s.totalS;alerted=false;updateDisp();const b2=g('tstart-'+w.id);if(b2)b2.textContent='&#x25B6; Start';saveS();});});
   updateDisp();
-  if (s.running) {
-    startTime = Date.now() - (s.totalS - s.remS)*1000;
-    iv = setInterval(tick, 500);
-    const b=g('tstart-'+w.id); if(b) b.textContent='⏸ Pause';
-  }
-  cleanups[w.id] = () => clearInterval(iv);
-}
-
-// ════════════════════════════════════════
-// STOPWATCH
-// ════════════════════════════════════════
-function initStopwatch(w, body) {
-  let running=false, elapsed=0, startT=null, laps=[];
-
-  body.innerHTML = `
-    <div class="big-time" id="sw-${w.id}" style="font-size:clamp(24px,5vw,48px)">00:00.0</div>
-    <div class="btn-row">
-      <button class="btn btn-p sm" id="sws-${w.id}">▶ Start</button>
-      <button class="btn btn-s sm" id="swl-${w.id}">Lap</button>
-      <button class="btn btn-s sm" id="swr-${w.id}">↺</button>
-    </div>
-    <div class="sw-laps" id="swlaps-${w.id}"></div>`;
-
-  const fmt = ms => {
-    const cs=Math.floor(ms/100)%10, s=Math.floor(ms/1000)%60, m=Math.floor(ms/60000);
-    return String(m).padStart(2,'0')+':'+String(s).padStart(2,'0')+'.'+cs;
-  };
-  let iv=null;
-  function update() { const el=g('sw-'+w.id); if(el) el.textContent=fmt(running?elapsed+(Date.now()-startT):elapsed); }
-
-  g('sws-'+w.id)?.addEventListener('click', () => {
-    const b=g('sws-'+w.id);
-    if (running) { elapsed+=Date.now()-startT; running=false; clearInterval(iv); iv=null; if(b) b.textContent='▶ Start'; }
-    else { startT=Date.now(); running=true; iv=setInterval(update,100); if(b) b.textContent='⏸ Pause'; }
-  });
-  g('swl-'+w.id)?.addEventListener('click', () => {
-    const t=running?elapsed+(Date.now()-startT):elapsed;
-    if(t===0) return;
-    laps.push(t);
-    const ld=g('swlaps-'+w.id);
-    if(ld) { const d=document.createElement('div'); d.className='sw-lap';
-      d.innerHTML=`<span>Lap ${laps.length}</span><span>${fmt(t)}</span>`;
-      ld.insertBefore(d,ld.firstChild); }
-  });
-  g('swr-'+w.id)?.addEventListener('click', () => {
-    running=false; clearInterval(iv); iv=null; elapsed=0; startT=null; laps=[];
-    const el=g('sw-'+w.id); if(el) el.textContent='00:00.0';
-    const ld=g('swlaps-'+w.id); if(ld) ld.innerHTML='';
-    const b=g('sws-'+w.id); if(b) b.textContent='▶ Start';
-  });
+  if(s.running){startTime=Date.now()-(s.totalS-s.remS)*1000;iv=setInterval(tick,500);const b=g('tstart-'+w.id);if(b)b.textContent='&#x23F8; Pause';}
   cleanups[w.id]=()=>clearInterval(iv);
 }
 
-// ════════════════════════════════════════
-// POMODORO
-// ════════════════════════════════════════
-function initPomodoro(w, body) {
-  const WORK=25*60, BREAK=5*60, LONG=15*60;
-  const CIRC=2*Math.PI*50;
-  let phase='work', pomos=0, remS=WORK, running=false, startT=null, iv=null;
+// ── STOPWATCH ──
+function initStopwatch(w,body) {
+  let running=false,elapsed=0,startT=null,laps=[];
+  body.innerHTML=`<div class="big-time" id="sw-${w.id}" style="font-size:clamp(24px,5vw,48px)">00:00.0</div><div class="btn-row"><button class="btn btn-p sm" id="sws-${w.id}">&#x25B6; Start</button><button class="btn btn-s sm" id="swl-${w.id}">Lap</button><button class="btn btn-s sm" id="swr-${w.id}">&#x21BA;</button></div><div class="sw-laps" id="swlaps-${w.id}"></div>`;
+  const fmt=ms=>{const cs=Math.floor(ms/100)%10,sec=Math.floor(ms/1000)%60,m=Math.floor(ms/60000);return String(m).padStart(2,'0')+':'+String(sec).padStart(2,'0')+'.'+cs;};
+  let iv=null;
+  function update(){const el=g('sw-'+w.id);if(el)el.textContent=fmt(running?elapsed+(Date.now()-startT):elapsed);}
+  g('sws-'+w.id)?.addEventListener('click',()=>{const b=g('sws-'+w.id);if(running){elapsed+=Date.now()-startT;running=false;clearInterval(iv);iv=null;if(b)b.textContent='&#x25B6; Start';}else{startT=Date.now();running=true;iv=setInterval(update,100);if(b)b.textContent='&#x23F8; Pause';}});
+  g('swl-'+w.id)?.addEventListener('click',()=>{const t=running?elapsed+(Date.now()-startT):elapsed;if(t===0)return;laps.push(t);const ld=g('swlaps-'+w.id);if(ld){const d=document.createElement('div');d.className='sw-lap';d.innerHTML='<span>Lap '+laps.length+'</span><span>'+fmt(t)+'</span>';ld.insertBefore(d,ld.firstChild);}});
+  g('swr-'+w.id)?.addEventListener('click',()=>{running=false;clearInterval(iv);iv=null;elapsed=0;startT=null;laps=[];const el=g('sw-'+w.id);if(el)el.textContent='00:00.0';const ld=g('swlaps-'+w.id);if(ld)ld.innerHTML='';const b=g('sws-'+w.id);if(b)b.textContent='&#x25B6; Start';});
+  cleanups[w.id]=()=>clearInterval(iv);
+}
 
-  body.innerHTML = `
+// ── POMODORO (configurable durations) ──
+function initPomodoro(w,body) {
+  w.state=w.state||{workMin:25,breakMin:5,longMin:15};
+  const ps=w.state; const CIRC=2*Math.PI*50;
+  let phase='work',pomos=0,running=false,startT=null,iv=null;
+  let WORK=(ps.workMin||25)*60,BREAK=(ps.breakMin||5)*60,LONG=(ps.longMin||15)*60,remS=WORK;
+  body.innerHTML=`
     <div class="pomo-phase" id="pomoph-${w.id}">Focus</div>
     <div class="pomo-wrap">
       <svg viewBox="0 0 110 110" width="110" height="110">
         <circle class="pr-bg" cx="55" cy="55" r="50"/>
-        <circle class="pr-fill" id="pomoring-${w.id}" cx="55" cy="55" r="50"
-          stroke-dasharray="${CIRC}" stroke-dashoffset="0"/>
+        <circle class="pr-fill" id="pomoring-${w.id}" cx="55" cy="55" r="50" stroke-dasharray="${CIRC}" stroke-dashoffset="0"/>
       </svg>
-      <div class="pomo-label-ring" id="pomotime-${w.id}">25:00</div>
+      <div class="pomo-label-ring" id="pomotime-${w.id}">--:--</div>
     </div>
     <div class="pomo-count">Completed: <strong id="pomocount-${w.id}">0</strong></div>
     <div class="btn-row">
-      <button class="btn btn-p sm" id="pomogo-${w.id}">▶ Start</button>
-      <button class="btn btn-s sm" id="pomoskip-${w.id}">Skip →</button>
-      <button class="btn btn-s sm" id="pomoreset-${w.id}">↺</button>
-    </div>`;
-
-  const totalForPhase = () => phase==='work'?WORK:phase==='longbreak'?LONG:BREAK;
-  const fmt = s => String(Math.floor(s/60)).padStart(2,'0')+':'+String(s%60).padStart(2,'0');
-
-  function updateDisp() {
-    const tEl=g('pomotime-'+w.id), rEl=g('pomoring-'+w.id);
-    const phEl=g('pomoph-'+w.id), cEl=g('pomocount-'+w.id);
-    if(!tEl) return;
-    tEl.textContent=fmt(remS);
-    const total=totalForPhase();
-    if(rEl) rEl.style.strokeDashoffset=CIRC*(1-remS/total);
-    const isWork=phase==='work';
-    if(rEl) rEl.style.stroke=isWork?'var(--accent)':'var(--success)';
-    if(phEl){ phEl.textContent=phase==='work'?'Focus':phase==='longbreak'?'Long Break':'Break'; phEl.style.color=isWork?'var(--accent)':'var(--success)'; }
-    if(cEl) cEl.textContent=pomos;
-  }
-
-  function tick() {
-    remS=Math.max(0, totalForPhase()-Math.floor((Date.now()-startT)/1000));
-    updateDisp();
-    if(remS<=0){ clearInterval(iv);iv=null;running=false;playAlert();
-      if(phase==='work'){ pomos++; phase=pomos%4===0?'longbreak':'break'; }
-      else phase='work';
-      remS=totalForPhase(); updateDisp();
-      const b=g('pomogo-'+w.id); if(b) b.textContent='▶ Start';
-    }
-  }
-
-  g('pomogo-'+w.id)?.addEventListener('click',()=>{
-    const b=g('pomogo-'+w.id);
-    if(running){ running=false;clearInterval(iv);iv=null;if(b)b.textContent='▶ Start'; }
-    else{ if(remS<=0)remS=totalForPhase();
-      startT=Date.now()-(totalForPhase()-remS)*1000; running=true;
-      iv=setInterval(tick,500); if(b)b.textContent='⏸ Pause'; }
-  });
-  g('pomoskip-'+w.id)?.addEventListener('click',()=>{
-    clearInterval(iv);iv=null;running=false;
-    if(phase==='work'){ pomos++; phase=pomos%4===0?'longbreak':'break'; }
-    else phase='work';
-    remS=totalForPhase(); updateDisp();
-    const b=g('pomogo-'+w.id); if(b)b.textContent='▶ Start';
-  });
-  g('pomoreset-'+w.id)?.addEventListener('click',()=>{
-    clearInterval(iv);iv=null;running=false;phase='work';pomos=0;remS=WORK;
-    updateDisp(); const b=g('pomogo-'+w.id); if(b)b.textContent='▶ Start';
-  });
-
-  updateDisp();
-  cleanups[w.id]=()=>clearInterval(iv);
+      <button class="btn btn-p sm" id="pomogo-${w.id}">&#x25B6; Start</button>
+      <button class="btn btn-s sm" id="pomoskip-${w.id}">Skip &#x2192;</button>
+      <button class="btn btn-s sm" id="pomoreset-${w.id}">&#x21BA;</button>
+    </div>
+    <details style="margin-top:6px">
+      <summary>Durations</summary>
+      <div class="config-block" style="margin-top:6px">
+        <div class="pomo-cfg-row"><span style="width:70px">Focus</span><input type="number" id="pomowork-${w.id}" value="${ps.workMin||25}" min="1" max="120"><span>min</span></div>
+        <div class="pomo-cfg-row"><span style="width:70px">Break</span><input type="number" id="pomobreak-${w.id}" value="${ps.breakMin||5}" min="1" max="60"><span>min</span></div>
+        <div class="pomo-cfg-row"><span style="width:70px">Long break</span><input type="number" id="pomolong-${w.id}" value="${ps.longMin||15}" min="1" max="90"><span>min</span></div>
+        <div class="btn-row"><button class="btn btn-p sm" id="pomosave-${w.id}">Apply</button></div>
+      </div>
+    </details>`;
+  const totalForPhase=()=>phase==='work'?WORK:phase==='longbreak'?LONG:BREAK;
+  const fmt=s=>String(Math.floor(s/60)).padStart(2,'0')+':'+String(s%60).padStart(2,'0');
+  function updateDisp(){const tEl=g('pomotime-'+w.id),rEl=g('pomoring-'+w.id),phEl=g('pomoph-'+w.id),cEl=g('pomocount-'+w.id);if(!tEl)return;tEl.textContent=fmt(remS);const total=totalForPhase();if(rEl)rEl.style.strokeDashoffset=CIRC*(1-remS/total);const isWork=phase==='work';if(rEl)rEl.style.stroke=isWork?'var(--accent)':'var(--success)';if(phEl){phEl.textContent=phase==='work'?'Focus':phase==='longbreak'?'Long Break':'Break';phEl.style.color=isWork?'var(--accent)':'var(--success)';}if(cEl)cEl.textContent=pomos;}
+  function tick(){remS=Math.max(0,totalForPhase()-Math.floor((Date.now()-startT)/1000));updateDisp();if(remS<=0){clearInterval(iv);iv=null;running=false;playAlert();if(phase==='work'){pomos++;phase=pomos%4===0?'longbreak':'break';}else phase='work';remS=totalForPhase();updateDisp();const b=g('pomogo-'+w.id);if(b)b.textContent='&#x25B6; Start';}}
+  g('pomogo-'+w.id)?.addEventListener('click',()=>{const b=g('pomogo-'+w.id);if(running){running=false;clearInterval(iv);iv=null;if(b)b.textContent='&#x25B6; Start';}else{if(remS<=0)remS=totalForPhase();startT=Date.now()-(totalForPhase()-remS)*1000;running=true;iv=setInterval(tick,500);if(b)b.textContent='&#x23F8; Pause';}});
+  g('pomoskip-'+w.id)?.addEventListener('click',()=>{clearInterval(iv);iv=null;running=false;if(phase==='work'){pomos++;phase=pomos%4===0?'longbreak':'break';}else phase='work';remS=totalForPhase();updateDisp();const b=g('pomogo-'+w.id);if(b)b.textContent='&#x25B6; Start';});
+  g('pomoreset-'+w.id)?.addEventListener('click',()=>{clearInterval(iv);iv=null;running=false;phase='work';pomos=0;WORK=(ps.workMin||25)*60;BREAK=(ps.breakMin||5)*60;LONG=(ps.longMin||15)*60;remS=WORK;updateDisp();const b=g('pomogo-'+w.id);if(b)b.textContent='&#x25B6; Start';});
+  g('pomosave-'+w.id)?.addEventListener('click',()=>{ps.workMin=Math.max(1,+g('pomowork-'+w.id)?.value||25);ps.breakMin=Math.max(1,+g('pomobreak-'+w.id)?.value||5);ps.longMin=Math.max(1,+g('pomolong-'+w.id)?.value||15);WORK=ps.workMin*60;BREAK=ps.breakMin*60;LONG=ps.longMin*60;clearInterval(iv);iv=null;running=false;phase='work';pomos=0;remS=WORK;updateDisp();const b=g('pomogo-'+w.id);if(b)b.textContent='&#x25B6; Start';saveS();});
+  updateDisp(); cleanups[w.id]=()=>clearInterval(iv);
 }
 
-// ════════════════════════════════════════
-// NOTES
-// ════════════════════════════════════════
-function initNotes(w, body) {
-  w.state = w.state||{text:''};
-  body.innerHTML = `<textarea class="notes-ta" id="notes-${w.id}" placeholder="Start typing...">${esc(w.state.text)}</textarea>`;
+// ── NOTES ──
+function initNotes(w,body) {
+  w.state=w.state||{text:''};
+  body.innerHTML=`<textarea class="notes-ta" id="notes-${w.id}" placeholder="Start typing...">${esc(w.state.text)}</textarea><div class="notes-footer"><button class="btn btn-s sm" id="notesclr-${w.id}">&#x2715; New class</button></div>`;
   let saveT=null;
-  g('notes-'+w.id)?.addEventListener('input',()=>{
-    clearTimeout(saveT);
-    saveT=setTimeout(()=>{ w.state.text=g('notes-'+w.id)?.value||''; saveS(); },600);
-  });
+  g('notes-'+w.id)?.addEventListener('input',()=>{ clearTimeout(saveT); saveT=setTimeout(()=>{w.state.text=g('notes-'+w.id)?.value||'';saveS();},600); });
+  g('notesclr-'+w.id)?.addEventListener('click',()=>{ if(!confirm('Clear notes for new class?')) return; const ta=g('notes-'+w.id);if(ta)ta.value='';w.state.text='';saveS(); });
 }
 
-// ════════════════════════════════════════
-// CHECKLIST
-// ════════════════════════════════════════
-function initChecklist(w, body) {
-  w.state = w.state||{items:[]};
-
+// ── CHECKLIST (fixed state bug + progress bar) ──
+function initChecklist(w,body) {
+  if(!w.state||typeof w.state!=='object') w.state={};
+  if(!Array.isArray(w.state.items)) w.state.items=[];
   function render() {
     const items=w.state.items;
+    const done=items.filter(x=>x.done).length;
+    const pct=items.length>0?Math.round(done/items.length*100):0;
     body.innerHTML=`
       <div class="cl-list" id="cll-${w.id}">
-        ${items.map((it,i)=>`
-          <div class="cl-item${it.done?' done':''}" data-i="${i}">
-            <input type="checkbox"${it.done?' checked':''} data-i="${i}">
-            <input class="cl-text" type="text" value="${esc(it.text)}" data-i="${i}">
-            <button class="cl-del" data-i="${i}">✕</button>
-          </div>`).join('')}
+        ${items.map((it,i)=>`<div class="cl-item${it.done?' done':''}" data-i="${i}"><input type="checkbox"${it.done?' checked':''} data-i="${i}"><input class="cl-text" type="text" value="${esc(it.text)}" data-i="${i}" placeholder="Item..."><button class="cl-del" data-i="${i}">&#x2715;</button></div>`).join('')}
       </div>
       <div class="cl-add">
-        <input type="text" id="cladd-${w.id}" placeholder="Add item…">
+        <input type="text" id="cladd-${w.id}" placeholder="Add item...">
         <button class="btn btn-p sm" id="clbtn-${w.id}">Add</button>
       </div>
-      <div class="btn-row" style="margin-top:6px">
-        <button class="btn btn-s sm" id="clclr-${w.id}">Clear done</button>
-        <button class="btn btn-s sm" id="clunch-${w.id}">Uncheck all</button>
+      <div class="cl-footer">
+        <div class="cl-progress">
+          <span>${done}/${items.length}</span>
+          <div class="cl-prog-bar"><div class="cl-prog-fill" style="width:${pct}%"></div></div>
+        </div>
+        <div style="display:flex;gap:4px">
+          <button class="btn btn-s sm" id="clclr-${w.id}">Clear done</button>
+          <button class="btn btn-s sm" id="clunch-${w.id}">Uncheck all</button>
+        </div>
       </div>`;
-
-    body.querySelectorAll('input[type="checkbox"]').forEach(cb=>{
-      cb.addEventListener('change',()=>{
-        const i=+cb.dataset.i; w.state.items[i].done=cb.checked;
-        cb.closest('.cl-item').classList.toggle('done',cb.checked); saveS();
-      });
-    });
-    body.querySelectorAll('.cl-text').forEach(inp=>{
-      inp.addEventListener('change',()=>{ w.state.items[+inp.dataset.i].text=inp.value; saveS(); });
-    });
-    body.querySelectorAll('.cl-del').forEach(b=>{
-      b.addEventListener('click',()=>{ w.state.items.splice(+b.dataset.i,1); saveS(); render(); });
-    });
-
-    function addItem(){
-      const inp=g('cladd-'+w.id); if(!inp) return;
-      const t=inp.value.trim(); if(!t) return;
-      w.state.items.push({text:t,done:false}); inp.value=''; saveS(); render();
-      setTimeout(()=>g('cladd-'+w.id)?.focus(),30);
-    }
+    body.querySelectorAll('input[type="checkbox"]').forEach(cb=>{ cb.addEventListener('change',()=>{ const i=+cb.dataset.i;w.state.items[i].done=cb.checked;cb.closest('.cl-item').classList.toggle('done',cb.checked);saveS();render(); }); });
+    body.querySelectorAll('.cl-text').forEach(inp=>{ inp.addEventListener('change',()=>{w.state.items[+inp.dataset.i].text=inp.value;saveS();}); });
+    body.querySelectorAll('.cl-del').forEach(b=>{ b.addEventListener('click',()=>{w.state.items.splice(+b.dataset.i,1);saveS();render();}); });
+    function addItem(){const inp=g('cladd-'+w.id);if(!inp)return;const t=inp.value.trim();if(!t)return;w.state.items.push({text:t,done:false});inp.value='';saveS();render();setTimeout(()=>g('cladd-'+w.id)?.focus(),30);}
     g('clbtn-'+w.id)?.addEventListener('click',addItem);
-    g('cladd-'+w.id)?.addEventListener('keydown',e=>{ if(e.key==='Enter') addItem(); });
-    g('clclr-'+w.id)?.addEventListener('click',()=>{ w.state.items=w.state.items.filter(x=>!x.done); saveS(); render(); });
-    g('clunch-'+w.id)?.addEventListener('click',()=>{ w.state.items.forEach(x=>x.done=false); saveS(); render(); });
+    g('cladd-'+w.id)?.addEventListener('keydown',e=>{if(e.key==='Enter')addItem();});
+    g('clclr-'+w.id)?.addEventListener('click',()=>{w.state.items=w.state.items.filter(x=>!x.done);saveS();render();});
+    g('clunch-'+w.id)?.addEventListener('click',()=>{w.state.items.forEach(x=>x.done=false);saveS();render();});
   }
   render();
 }
 
-// ════════════════════════════════════════
-// CALCULATOR
-// ════════════════════════════════════════
-function initCalc(w, body) {
-  let expr='', disp='0', hasRes=false;
-
-  body.innerHTML=`
-    <div class="calc-screen">
-      <div class="calc-expr" id="ce-${w.id}"></div>
-      <div class="calc-val" id="cv-${w.id}">0</div>
-    </div>
-    <div class="calc-grid">
-      ${[['C','±','%','÷'],['7','8','9','×'],['4','5','6','−'],['1','2','3','+'],['0','0','.','=']]
-        .map((row,ri)=>row.map((v,ci)=>{
-          if(ri===4&&ci===1) return '';
-          let cls='cb';
-          if('÷×−+'.includes(v)) cls+=' op';
-          if(v==='C') cls+=' clr';
-          if(v==='=') cls+=' eq';
-          if(ri===4&&ci===0) cls+=' dbl';
-          return `<button class="${cls}" data-v="${v}">${v}</button>`;
-        }).join('')).join('')}
-    </div>`;
-
-  function upd(){ const e=g('ce-'+w.id),v=g('cv-'+w.id); if(e)e.textContent=expr; if(v)v.textContent=disp; }
-
-  body.querySelectorAll('.cb').forEach(b=>{
-    b.addEventListener('click',()=>{
-      const v=b.dataset.v;
-      if(v==='C'){ expr=''; disp='0'; hasRes=false; }
-      else if(v==='='){ try{
-        const r=Function('"use strict";return('+expr.replace(/×/g,'*').replace(/÷/g,'/').replace(/−/g,'-')+')')();
-        disp=String(parseFloat(r.toFixed(10))); expr=disp; hasRes=true;
-      }catch(e){disp='Error';} }
-      else if(v==='±'){ if(disp!=='0'){ disp=String(-parseFloat(disp)); expr=disp; } }
-      else if(v==='%'){ try{
-        const r=Function('"use strict";return('+expr.replace(/×/g,'*').replace(/÷/g,'/').replace(/−/g,'-')+')')();
-        disp=String(r/100); expr=disp;
-      }catch(e){} }
-      else{
-        if(hasRes&&!'÷×−+'.includes(v)) expr='';
-        hasRes=false; expr+=v;
-        try{ const r=Function('"use strict";return('+expr.replace(/×/g,'*').replace(/÷/g,'/').replace(/−/g,'-')+')')();
-          if(isFinite(r)) disp=String(parseFloat(r.toFixed(10))); }catch(e){}
-      }
-      upd();
-    });
-  });
+// ── CALCULATOR ──
+function initCalc(w,body) {
+  let expr='',disp='0',hasRes=false;
+  body.innerHTML=`<div class="calc-screen"><div class="calc-expr" id="ce-${w.id}"></div><div class="calc-val" id="cv-${w.id}">0</div></div><div class="calc-grid">${[['C','&#x00B1;','%','&#xF7;'],['7','8','9','&#xD7;'],['4','5','6','&#x2212;'],['1','2','3','+'],['0','0','.','=']].map((row,ri)=>row.map((v,ci)=>{if(ri===4&&ci===1)return'';let cls='cb';if(['&#xF7;','&#xD7;','&#x2212;','+'].includes(v))cls+=' op';if(v==='C')cls+=' clr';if(v==='=')cls+=' eq';if(ri===4&&ci===0)cls+=' dbl';return'<button class="'+cls+'" data-v="'+v+'">'+v+'</button>';}).join('')).join('')}</div>`;
+  function upd(){const e=g('ce-'+w.id),v=g('cv-'+w.id);if(e)e.textContent=expr;if(v)v.textContent=disp;}
+  body.querySelectorAll('.cb').forEach(b=>{b.addEventListener('click',()=>{const v=b.dataset.v;if(v==='C'){expr='';disp='0';hasRes=false;}else if(v==='='){try{const r=Function('"use strict";return('+expr.replace(/&#xD7;/g,'*').replace(/&#xF7;/g,'/').replace(/&#x2212;/g,'-')+')')();disp=String(parseFloat(r.toFixed(10)));expr=disp;hasRes=true;}catch(e){disp='Error';}}else if(v==='&#x00B1;'){if(disp!=='0'){disp=String(-parseFloat(disp));expr=disp;}}else if(v==='%'){try{const r=Function('"use strict";return('+expr.replace(/&#xD7;/g,'*').replace(/&#xF7;/g,'/').replace(/&#x2212;/g,'-')+')')();disp=String(r/100);expr=disp;}catch(e){}}else{if(hasRes&&!['&#xF7;','&#xD7;','&#x2212;','+'].includes(v))expr='';hasRes=false;expr+=v;try{const r=Function('"use strict";return('+expr.replace(/&#xD7;/g,'*').replace(/&#xF7;/g,'/').replace(/&#x2212;/g,'-')+')')();if(isFinite(r))disp=String(parseFloat(r.toFixed(10)));}catch(e){}}upd();});});
 }
 
-// ════════════════════════════════════════
-// YOUTUBE
-// ════════════════════════════════════════
-function initYoutube(w, body) {
+// ── YOUTUBE ──
+function initYoutube(w,body) {
   w.state=w.state||{url:''};
-  function getVid(url) {
-    const m=url.match(/(?:v=|youtu\.be\/|embed\/|shorts\/)([a-zA-Z0-9_-]{11})/);
-    return m?m[1]:null;
-  }
-  function renderEmbed(vid) {
-    const a=g('yta-'+w.id); if(!a) return;
-    a.innerHTML=vid?`<iframe class="yt-frame" src="https://www.youtube.com/embed/${vid}?rel=0" allowfullscreen></iframe>`
-      :`<div class="yt-empty">Paste a YouTube URL above</div>`;
-  }
-  body.innerHTML=`
-    <div class="yt-controls">
-      <input type="url" class="yt-url" id="ytu-${w.id}" placeholder="Paste YouTube URL…" value="${esc(w.state.url)}">
-      <button class="btn btn-p sm" id="ytload-${w.id}">Load</button>
-      <button class="btn btn-s sm" id="ytclr-${w.id}">✕</button>
-    </div>
-    <div id="yta-${w.id}"></div>`;
+  function getVid(url){const m=url.match(/(?:v=|youtu\.be\/|embed\/|shorts\/)([a-zA-Z0-9_-]{11})/);return m?m[1]:null;}
+  function renderEmbed(vid){const a=g('yta-'+w.id);if(!a)return;a.innerHTML=vid?`<iframe class="yt-frame" src="https://www.youtube.com/embed/${vid}?rel=0" allowfullscreen></iframe>`:'<div class="yt-empty">Paste a YouTube URL above</div>';}
+  body.innerHTML=`<div class="yt-controls"><input type="url" class="yt-url" id="ytu-${w.id}" placeholder="Paste YouTube URL..." value="${esc(w.state.url)}"><button class="btn btn-p sm" id="ytload-${w.id}">Load</button><button class="btn btn-s sm" id="ytclr-${w.id}">&#x2715;</button></div><div id="yta-${w.id}"></div>`;
   renderEmbed(w.state.url?getVid(w.state.url):null);
-  function load(){ const u=g('ytu-'+w.id)?.value.trim()||''; w.state.url=u; saveS(); renderEmbed(getVid(u)); }
+  function load(){const u=g('ytu-'+w.id)?.value.trim()||'';w.state.url=u;saveS();renderEmbed(getVid(u));}
   g('ytload-'+w.id)?.addEventListener('click',load);
-  g('ytu-'+w.id)?.addEventListener('keydown',e=>{ if(e.key==='Enter') load(); });
-  g('ytclr-'+w.id)?.addEventListener('click',()=>{ const inp=g('ytu-'+w.id); if(inp)inp.value=''; w.state.url=''; saveS(); renderEmbed(null); });
+  g('ytu-'+w.id)?.addEventListener('keydown',e=>{if(e.key==='Enter')load();});
+  g('ytclr-'+w.id)?.addEventListener('click',()=>{const inp=g('ytu-'+w.id);if(inp)inp.value='';w.state.url='';saveS();renderEmbed(null);});
 }
 
-// ════════════════════════════════════════
-// NAME PICKER
-// ════════════════════════════════════════
-function initPicker(w, body) {
+// ── NAME PICKER ──
+function initPicker(w,body) {
   w.state=w.state||{names:'',last:''};
   let pickedSet=new Set();
-  body.innerHTML=`
-    <div class="picker-result" id="pr-${w.id}">${esc(w.state.last)||'Press Pick!'}</div>
-    <div class="btn-row">
-      <button class="btn btn-p" id="pick-${w.id}">🎯 Pick!</button>
-      <button class="btn btn-s sm" id="pickreset-${w.id}">Reset pool</button>
-    </div>
-    <details style="margin-top:10px">
-      <summary>Edit roster</summary>
-      <textarea class="picker-names" id="pnames-${w.id}" placeholder="One name per line…">${esc(w.state.names)}</textarea>
-      <div class="picker-meta" id="pmeta-${w.id}"></div>
-    </details>`;
-
-  function getNames(){ return (g('pnames-'+w.id)?.value||w.state.names).split('\n').map(n=>n.trim()).filter(Boolean); }
-  function updateMeta(){ const names=getNames(); const m=g('pmeta-'+w.id); if(m) m.textContent=`${names.length} names · ${names.length-pickedSet.size} remaining`; }
-
-  g('pnames-'+w.id)?.addEventListener('input',()=>{ w.state.names=g('pnames-'+w.id)?.value||''; saveS(); updateMeta(); });
-  g('pickreset-'+w.id)?.addEventListener('click',()=>{ pickedSet.clear(); updateMeta(); const r=g('pr-'+w.id); if(r) r.textContent='Pool reset!'; });
-
-  g('pick-'+w.id)?.addEventListener('click',()=>{
-    const names=getNames(); if(!names.length){ const r=g('pr-'+w.id); if(r)r.textContent='Add names first!'; return; }
-    let avail=names.filter(n=>!pickedSet.has(n));
-    if(!avail.length){ pickedSet.clear(); avail=names; }
-    const r=g('pr-'+w.id); if(!r) return;
-    r.classList.add('spinning'); let c=0;
-    const spin=setInterval(()=>{
-      r.textContent=avail[Math.floor(Math.random()*avail.length)]; c++;
-      if(c>=14){ clearInterval(spin); r.classList.remove('spinning');
-        const chosen=avail[Math.floor(Math.random()*avail.length)];
-        r.textContent=chosen; pickedSet.add(chosen);
-        w.state.last=chosen; saveS(); updateMeta(); }
-    },75);
-  });
+  body.innerHTML=`<div class="picker-result" id="pr-${w.id}">${w.state.last?esc(w.state.last):'Press Pick!'}</div><div class="btn-row"><button class="btn btn-p" id="pick-${w.id}">&#x1F3AF; Pick!</button><button class="btn btn-s sm" id="pickreset-${w.id}">Reset pool</button></div><details style="margin-top:10px"><summary>Edit roster</summary><textarea class="picker-names" id="pnames-${w.id}" placeholder="One name per line...">${esc(w.state.names)}</textarea><div class="picker-meta" id="pmeta-${w.id}"></div></details>`;
+  function getNames(){return(g('pnames-'+w.id)?.value||w.state.names).split('\n').map(n=>n.trim()).filter(Boolean);}
+  function updateMeta(){const names=getNames();const m=g('pmeta-'+w.id);if(m)m.textContent=names.length+' names \u00b7 '+(names.length-pickedSet.size)+' remaining';}
+  g('pnames-'+w.id)?.addEventListener('input',()=>{w.state.names=g('pnames-'+w.id)?.value||'';saveS();updateMeta();});
+  g('pickreset-'+w.id)?.addEventListener('click',()=>{pickedSet.clear();updateMeta();const r=g('pr-'+w.id);if(r)r.textContent='Pool reset!';});
+  g('pick-'+w.id)?.addEventListener('click',()=>{const names=getNames();if(!names.length){const r=g('pr-'+w.id);if(r)r.textContent='Add names first!';return;}let avail=names.filter(n=>!pickedSet.has(n));if(!avail.length){pickedSet.clear();avail=names;}const r=g('pr-'+w.id);if(!r)return;r.classList.add('spinning');let c=0;const spin=setInterval(()=>{r.textContent=avail[Math.floor(Math.random()*avail.length)];c++;if(c>=14){clearInterval(spin);r.classList.remove('spinning');const chosen=avail[Math.floor(Math.random()*avail.length)];r.textContent=chosen;pickedSet.add(chosen);w.state.last=chosen;saveS();updateMeta();}},75);});
   updateMeta();
 }
 
-// ════════════════════════════════════════
-// NOISE METER
-// ════════════════════════════════════════
-function initNoise(w, body) {
-  let stream=null, analyser=null, iv=null, active=false;
-  body.innerHTML=`
-    <button class="mic-btn" id="micbtn-${w.id}">🎤 Enable Microphone</button>
-    <div class="noise-bars" id="nbars-${w.id}">
-      ${Array(14).fill(0).map(()=>'<div class="n-bar" style="height:3px"></div>').join('')}
-    </div>
-    <div class="noise-pct" id="npct-${w.id}">--%</div>
-    <div class="noise-status" id="nstatus-${w.id}">Microphone off</div>
-    <div class="noise-thresh">
-      <span>Alert at:</span>
-      <input type="range" id="nthresh-${w.id}" min="10" max="100" value="70">
-      <span id="ntlabel-${w.id}">70%</span>
-    </div>`;
-
-  g('nthresh-'+w.id)?.addEventListener('input',()=>{
-    const t=g('nthresh-'+w.id)?.value; const l=g('ntlabel-'+w.id); if(l)l.textContent=t+'%';
-  });
-
-  g('micbtn-'+w.id)?.addEventListener('click', async()=>{
-    if(active){
-      active=false; if(stream) stream.getTracks().forEach(t=>t.stop());
-      clearInterval(iv); iv=null;
-      const b=g('micbtn-'+w.id); if(b){b.textContent='🎤 Enable Microphone';b.classList.remove('on');}
-      const s=g('nstatus-'+w.id); if(s)s.textContent='Microphone off';
-      const bars=g('nbars-'+w.id); if(bars)bars.querySelectorAll('.n-bar').forEach(b=>{ b.style.height='3px'; b.className='n-bar'; });
-      const p=g('npct-'+w.id); if(p)p.textContent='--%';
-    } else {
-      try{
-        stream=await navigator.mediaDevices.getUserMedia({audio:true});
-        const ctx=new AudioContext(), src=ctx.createMediaStreamSource(stream);
-        analyser=ctx.createAnalyser(); analyser.fftSize=256;
-        src.connect(analyser); active=true;
-        const b=g('micbtn-'+w.id); if(b){b.textContent='🔴 Disable Microphone';b.classList.add('on');}
-        const data=new Uint8Array(analyser.frequencyBinCount);
-        iv=setInterval(()=>{
-          if(!analyser) return;
-          analyser.getByteFrequencyData(data);
-          const avg=data.reduce((a,x)=>a+x,0)/data.length;
-          const pct=Math.min(100,Math.round(avg/128*100));
-          const thresh=+(g('nthresh-'+w.id)?.value||70);
-          const pEl=g('npct-'+w.id), sEl=g('nstatus-'+w.id), barsEl=g('nbars-'+w.id);
-          if(pEl) pEl.textContent=pct+'%';
-          if(sEl){
-            if(pct<thresh*0.5){sEl.textContent='🟢 Quiet';sEl.style.color='var(--success)';}
-            else if(pct<thresh){sEl.textContent='🟡 Moderate';sEl.style.color='var(--warning)';}
-            else{sEl.textContent='🔴 Too Loud!';sEl.style.color='var(--danger)';}
-          }
-          if(barsEl){ const bs=barsEl.querySelectorAll('.n-bar'); const n=bs.length;
-            for(let i=0;i<n;i++){
-              const di=Math.floor(i*data.length/n);
-              const h=Math.max(3,(data[di]/255)*70);
-              bs[i].style.height=h+'px';
-              bs[i].className='n-bar'+(data[di]>200?' h':data[di]>128?' m':'');
-            }
-          }
-        },100);
-      }catch(e){ const s=g('nstatus-'+w.id); if(s)s.textContent='Mic access denied'; }
-    }
-  });
-  cleanups[w.id]=()=>{ if(stream)stream.getTracks().forEach(t=>t.stop()); clearInterval(iv); };
+// ── NOISE METER ──
+function initNoise(w,body) {
+  let stream=null,analyser=null,iv=null,active=false;
+  body.innerHTML=`<button class="mic-btn" id="micbtn-${w.id}">&#x1F3A4; Enable Microphone</button><div class="noise-bars" id="nbars-${w.id}">${Array(14).fill(0).map(()=>'<div class="n-bar" style="height:3px"></div>').join('')}</div><div class="noise-pct" id="npct-${w.id}">--%</div><div class="noise-status" id="nstatus-${w.id}">Microphone off</div><div class="noise-thresh"><span>Alert at:</span><input type="range" id="nthresh-${w.id}" min="10" max="100" value="70"><span id="ntlabel-${w.id}">70%</span></div>`;
+  g('nthresh-'+w.id)?.addEventListener('input',()=>{const t=g('nthresh-'+w.id)?.value;const l=g('ntlabel-'+w.id);if(l)l.textContent=t+'%';});
+  g('micbtn-'+w.id)?.addEventListener('click',async()=>{if(active){active=false;if(stream)stream.getTracks().forEach(t=>t.stop());clearInterval(iv);iv=null;const b=g('micbtn-'+w.id);if(b){b.textContent='&#x1F3A4; Enable Microphone';b.classList.remove('on');}const s=g('nstatus-'+w.id);if(s)s.textContent='Microphone off';const bars=g('nbars-'+w.id);if(bars)bars.querySelectorAll('.n-bar').forEach(b=>{b.style.height='3px';b.className='n-bar';});const p=g('npct-'+w.id);if(p)p.textContent='--%';}else{try{stream=await navigator.mediaDevices.getUserMedia({audio:true});const ctx=new AudioContext(),src=ctx.createMediaStreamSource(stream);analyser=ctx.createAnalyser();analyser.fftSize=256;src.connect(analyser);active=true;const b=g('micbtn-'+w.id);if(b){b.textContent='&#x1F534; Disable Microphone';b.classList.add('on');}const data=new Uint8Array(analyser.frequencyBinCount);iv=setInterval(()=>{if(!analyser)return;analyser.getByteFrequencyData(data);const avg=data.reduce((a,x)=>a+x,0)/data.length;const pct=Math.min(100,Math.round(avg/128*100));const thresh=+(g('nthresh-'+w.id)?.value||70);const pEl=g('npct-'+w.id),sEl=g('nstatus-'+w.id),barsEl=g('nbars-'+w.id);if(pEl)pEl.textContent=pct+'%';if(sEl){if(pct<thresh*0.5){sEl.textContent='&#x1F7E2; Quiet';sEl.style.color='var(--success)';}else if(pct<thresh){sEl.textContent='&#x1F7E1; Moderate';sEl.style.color='var(--warning)';}else{sEl.textContent='&#x1F534; Too Loud!';sEl.style.color='var(--danger)';}}if(barsEl){const bs=barsEl.querySelectorAll('.n-bar');const n=bs.length;for(let i=0;i<n;i++){const di=Math.floor(i*data.length/n);const h=Math.max(3,(data[di]/255)*70);bs[i].style.height=h+'px';bs[i].className='n-bar'+(data[di]>200?' h':data[di]>128?' m':'');}}},100);}catch(e){const s=g('nstatus-'+w.id);if(s)s.textContent='Mic access denied';}}});
+  cleanups[w.id]=()=>{if(stream)stream.getTracks().forEach(t=>t.stop());clearInterval(iv);};
 }
 
-// ════════════════════════════════════════
-// QR CODE
-// ════════════════════════════════════════
-function initQR(w, body) {
+// ── QR CODE ──
+function initQR(w,body) {
   w.state=w.state||{text:''};
-  body.innerHTML=`
-    <input type="text" id="qri-${w.id}" placeholder="URL or text…" value="${esc(w.state.text)}">
-    <div class="btn-row"><button class="btn btn-p sm" id="qrgen-${w.id}">Generate QR</button></div>
-    <div id="qrout-${w.id}">
-      ${w.state.text?'<div class="qr-box"><div id="qrcode-'+w.id+'"></div></div>':'<div class="qr-empty">Enter text and press Generate</div>'}
-    </div>`;
-
-  function gen(){
-    const t=g('qri-'+w.id)?.value.trim()||''; if(!t) return;
-    w.state.text=t; saveS();
-    const out=g('qrout-'+w.id); if(!out) return;
-    out.innerHTML='<div class="qr-box"><div id="qrcode-'+w.id+'"></div></div>';
-    if(typeof QRCode!=='undefined') new QRCode(g('qrcode-'+w.id),{text:t,width:200,height:200});
-  }
+  body.innerHTML=`<input type="text" id="qri-${w.id}" placeholder="URL or text..." value="${esc(w.state.text)}"><div class="btn-row"><button class="btn btn-p sm" id="qrgen-${w.id}">Generate QR</button></div><div id="qrout-${w.id}">${w.state.text?'<div class="qr-box"><div id="qrcode-'+w.id+'"></div></div>':'<div class="qr-empty">Enter text and press Generate</div>'}</div>`;
+  function gen(){const t=g('qri-'+w.id)?.value.trim()||'';if(!t)return;w.state.text=t;saveS();const out=g('qrout-'+w.id);if(!out)return;out.innerHTML='<div class="qr-box"><div id="qrcode-'+w.id+'"></div></div>';if(typeof QRCode!=='undefined')new QRCode(g('qrcode-'+w.id),{text:t,width:200,height:200});}
   g('qrgen-'+w.id)?.addEventListener('click',gen);
-  g('qri-'+w.id)?.addEventListener('keydown',e=>{ if(e.key==='Enter') gen(); });
-  if(w.state.text) setTimeout(gen,150);
+  g('qri-'+w.id)?.addEventListener('keydown',e=>{if(e.key==='Enter')gen();});
+  if(w.state.text)setTimeout(gen,150);
 }
 
-// ════════════════════════════════════════
-// WEB CLIP
-// ════════════════════════════════════════
-function initWebClip(w, body) {
+// ── WEB CLIP ──
+function initWebClip(w,body) {
   w.state=w.state||{url:''};
-  body.innerHTML=`
-    <div class="yt-controls">
-      <input type="url" id="wcu-${w.id}" placeholder="https://…" value="${esc(w.state.url)}">
-      <button class="btn btn-p sm" id="wcload-${w.id}">Load</button>
-    </div>
-    <div id="wcout-${w.id}">
-      ${w.state.url?`<iframe class="wc-frame" src="${esc(w.state.url)}" sandbox="allow-scripts allow-same-origin allow-forms"></iframe>`
-        :'<div class="yt-empty" style="aspect-ratio:unset;min-height:120px">Enter a URL to embed</div>'}
-    </div>`;
-  g('wcload-'+w.id)?.addEventListener('click',()=>{
-    let u=g('wcu-'+w.id)?.value.trim()||'';
-    if(u&&!u.startsWith('http')) u='https://'+u;
-    w.state.url=u; saveS();
-    const out=g('wcout-'+w.id); if(!out) return;
-    out.innerHTML=u?`<iframe class="wc-frame" src="${esc(u)}" sandbox="allow-scripts allow-same-origin allow-forms"></iframe>`
-      :'<div class="yt-empty" style="aspect-ratio:unset;min-height:120px">Enter a URL to embed</div>';
-  });
+  body.innerHTML=`<div class="yt-controls"><input type="url" id="wcu-${w.id}" placeholder="https://..." value="${esc(w.state.url)}"><button class="btn btn-p sm" id="wcload-${w.id}">Load</button></div><div id="wcout-${w.id}">${w.state.url?'<iframe class="wc-frame" src="'+esc(w.state.url)+'" sandbox="allow-scripts allow-same-origin allow-forms"></iframe>':'<div class="yt-empty" style="aspect-ratio:unset;min-height:120px">Enter a URL to embed</div>'}</div>`;
+  g('wcload-'+w.id)?.addEventListener('click',()=>{let u=g('wcu-'+w.id)?.value.trim()||'';if(u&&!u.startsWith('http'))u='https://'+u;w.state.url=u;saveS();const out=g('wcout-'+w.id);if(!out)return;out.innerHTML=u?'<iframe class="wc-frame" src="'+esc(u)+'" sandbox="allow-scripts allow-same-origin allow-forms"></iframe>':'<div class="yt-empty" style="aspect-ratio:unset;min-height:120px">Enter a URL to embed</div>';});
 }
 
-// ════════════════════════════════════════
-// DICE
-// ════════════════════════════════════════
-function initDice(w, body) {
+// ── DICE ──
+function initDice(w,body) {
   let dType=6;
-  body.innerHTML=`
-    <div class="big-result" id="dres-${w.id}">?</div>
-    <div class="dice-types">
-      ${[4,6,8,10,12,20,100].map(d=>`<button class="d-btn${d===6?' on':''}" data-d="${d}">d${d}</button>`).join('')}
-    </div>
-    <div class="dice-count-row">
-      <span>Roll</span>
-      <input type="number" id="dcount-${w.id}" value="1" min="1" max="20">
-      <span>dice</span>
-    </div>
-    <div class="btn-row"><button class="btn btn-p" id="droll-${w.id}">🎲 Roll</button></div>`;
-
-  body.querySelectorAll('.d-btn').forEach(b=>{
-    b.addEventListener('click',()=>{ dType=+b.dataset.d; body.querySelectorAll('.d-btn').forEach(x=>x.classList.toggle('on',+x.dataset.d===dType)); });
-  });
-  g('droll-'+w.id)?.addEventListener('click',()=>{
-    const n=Math.max(1,Math.min(20,+g('dcount-'+w.id)?.value||1));
-    const rolls=Array.from({length:n},()=>Math.floor(Math.random()*dType)+1);
-    const total=rolls.reduce((a,b)=>a+b,0);
-    const r=g('dres-'+w.id); if(!r) return;
-    if(n===1) r.textContent=rolls[0];
-    else r.innerHTML=`<div style="font-size:0.55em;color:var(--text2);font-weight:400">${rolls.join(' + ')}</div><div>${total}</div>`;
-  });
+  body.innerHTML=`<div class="big-result" id="dres-${w.id}">?</div><div class="dice-types">${[4,6,8,10,12,20,100].map(d=>'<button class="d-btn'+(d===6?' on':'')+'" data-d="'+d+'">d'+d+'</button>').join('')}</div><div class="dice-count-row"><span>Roll</span><input type="number" id="dcount-${w.id}" value="1" min="1" max="20"><span>dice</span></div><div class="btn-row"><button class="btn btn-p" id="droll-${w.id}">&#x1F3B2; Roll</button></div>`;
+  body.querySelectorAll('.d-btn').forEach(b=>{b.addEventListener('click',()=>{dType=+b.dataset.d;body.querySelectorAll('.d-btn').forEach(x=>x.classList.toggle('on',+x.dataset.d===dType));});});
+  g('droll-'+w.id)?.addEventListener('click',()=>{const n=Math.max(1,Math.min(20,+g('dcount-'+w.id)?.value||1));const rolls=Array.from({length:n},()=>Math.floor(Math.random()*dType)+1);const total=rolls.reduce((a,b)=>a+b,0);const r=g('dres-'+w.id);if(!r)return;if(n===1)r.textContent=rolls[0];else r.innerHTML='<div style="font-size:0.55em;color:var(--text2);font-weight:400">'+rolls.join(' + ')+'</div><div>'+total+'</div>';});
 }
 
-// ════════════════════════════════════════
-// RANDOM NUMBER
-// ════════════════════════════════════════
-function initRandom(w, body) {
-  body.innerHTML=`
-    <div class="big-result" id="rres-${w.id}">?</div>
-    <div class="rand-range">
-      <input type="number" id="rmin-${w.id}" value="1">
-      <span>to</span>
-      <input type="number" id="rmax-${w.id}" value="100">
-    </div>
-    <div class="btn-row"><button class="btn btn-p" id="rgen-${w.id}">🔀 Generate</button></div>`;
-  g('rgen-'+w.id)?.addEventListener('click',()=>{
-    const min=+g('rmin-'+w.id)?.value||1, max=+g('rmax-'+w.id)?.value||100;
-    const n=Math.floor(Math.random()*(max-min+1))+min;
-    const r=g('rres-'+w.id); if(r) r.textContent=n;
-  });
+// ── RANDOM NUMBER ──
+function initRandom(w,body) {
+  body.innerHTML=`<div class="big-result" id="rres-${w.id}">?</div><div class="rand-range"><input type="number" id="rmin-${w.id}" value="1"><span>to</span><input type="number" id="rmax-${w.id}" value="100"></div><div class="btn-row"><button class="btn btn-p" id="rgen-${w.id}">&#x1F500; Generate</button></div>`;
+  g('rgen-'+w.id)?.addEventListener('click',()=>{const min=+g('rmin-'+w.id)?.value||1,max=+g('rmax-'+w.id)?.value||100;const n=Math.floor(Math.random()*(max-min+1))+min;const r=g('rres-'+w.id);if(r)r.textContent=n;});
 }
 
-// ════════════════════════════════════════
-// SOUND ALERT
-// ════════════════════════════════════════
+// ── SOUND ALERT ──
 function playAlert() {
-  try {
-    const ctx=new AudioContext(), osc=ctx.createOscillator(), gain=ctx.createGain();
-    osc.connect(gain); gain.connect(ctx.destination);
-    osc.type='sine'; gain.gain.setValueAtTime(0.25,ctx.currentTime);
-    [523,659,784,1047].forEach((f,i)=>{
-      const t=ctx.currentTime+i*0.16;
-      osc.frequency.setValueAtTime(f,t);
-      gain.gain.setValueAtTime(0.25,t);
-      gain.gain.exponentialRampToValueAtTime(0.001,t+0.16);
-    });
-    osc.start(ctx.currentTime); osc.stop(ctx.currentTime+0.8);
-    setTimeout(()=>ctx.close(),1500);
-  }catch(e){}
+  try{const ctx=new AudioContext(),osc=ctx.createOscillator(),gain=ctx.createGain();osc.connect(gain);gain.connect(ctx.destination);osc.type='sine';gain.gain.setValueAtTime(0.25,ctx.currentTime);[523,659,784,1047].forEach((f,i)=>{const t=ctx.currentTime+i*0.16;osc.frequency.setValueAtTime(f,t);gain.gain.setValueAtTime(0.25,t);gain.gain.exponentialRampToValueAtTime(0.001,t+0.16);});osc.start(ctx.currentTime);osc.stop(ctx.currentTime+0.8);setTimeout(()=>ctx.close(),1500);}catch(e){}
 }
 
-// ════════════════════════════════════════
-// MODAL
-// ════════════════════════════════════════
-function buildModal() {
-  const grid=g('wcard-grid'); if(!grid) return;
-  grid.innerHTML=DEFS.map(d=>`
-    <button class="wcard" data-type="${d.type}">
-      <div class="wc-icon">${d.icon}</div>
-      <div class="wc-label">${d.label}</div>
-      <div class="wc-desc">${d.desc}</div>
-    </button>`).join('');
-  grid.querySelectorAll('.wcard').forEach(b=>{
-    b.addEventListener('click',()=>{ addWidget(b.dataset.type); closeModal(); });
-  });
-}
-function openModal()  { g('wmodal').classList.add('open'); }
-function closeModal() { g('wmodal').classList.remove('open'); }
+// ── MODAL ──
+function buildModal(){const grid=g('wcard-grid');if(!grid)return;grid.innerHTML=DEFS.map(d=>'<button class="wcard" data-type="'+d.type+'"><div class="wc-icon">'+d.icon+'</div><div class="wc-label">'+d.label+'</div><div class="wc-desc">'+d.desc+'</div></button>').join('');grid.querySelectorAll('.wcard').forEach(b=>{b.addEventListener('click',()=>{addWidget(b.dataset.type);closeModal();});});}
+function openModal(){g('wmodal').classList.add('open');}
+function closeModal(){g('wmodal').classList.remove('open');}
 
-// ════════════════════════════════════════
-// THEME
-// ════════════════════════════════════════
-function applyTheme() {
-  document.body.dataset.theme = S.theme==='light'?'':S.theme;
-  const tb=g('theme-btn'), cb=g('contrast-btn');
-  if(tb){ tb.textContent=S.theme==='dark'?'☀️ Light':'🌙 Dark'; tb.classList.toggle('on',S.theme==='dark'); }
-  if(cb){ cb.classList.toggle('on',S.theme==='contrast'); }
-}
+// ── THEME ──
+function applyTheme(){document.body.dataset.theme=S.theme==='light'?'':S.theme;const tb=g('theme-btn'),cb=g('contrast-btn');if(tb){tb.textContent=S.theme==='dark'?'&#x2600;&#xFE0F; Light':'&#x1F319; Dark';tb.classList.toggle('on',S.theme==='dark');}if(cb)cb.classList.toggle('on',S.theme==='contrast');}
 
-// ════════════════════════════════════════
-// PROFILE SWITCH
-// ════════════════════════════════════════
-function switchProfile(idx) {
-  // Cleanup current
-  prof().widgets.forEach(w=>cleanup(w.id));
-  document.querySelectorAll('.widget').forEach(el=>el.remove());
-  S.activeProfile=idx;
-  document.querySelectorAll('.prof-btn').forEach(b=>b.classList.toggle('on',+b.dataset.p===idx));
-  saveS();
-  renderProfile();
-}
+// ── PROFILE ──
+function switchProfile(idx){prof().widgets.forEach(w=>cleanup(w.id));document.querySelectorAll('.widget').forEach(el=>el.remove());S.activeProfile=idx;document.querySelectorAll('.prof-btn').forEach(b=>b.classList.toggle('on',+b.dataset.p===idx));saveS();renderProfile();}
 
-// ════════════════════════════════════════
-// LOCK
-// ════════════════════════════════════════
-function applyLock() {
-  document.body.classList.toggle('locked',S.locked);
-  document.querySelectorAll('.widget').forEach(el=>{ el.draggable=!S.locked; });
-  const b=g('lock-btn');
-  if(b){ b.textContent=S.locked?'🔒 Locked':'🔓 Lock'; b.classList.toggle('lock-on',S.locked); }
-}
+// ── LOCK ──
+function applyLock(){document.body.classList.toggle('locked',S.locked);document.querySelectorAll('.widget').forEach(el=>{el.draggable=!S.locked;});const b=g('lock-btn');if(b){b.textContent=S.locked?'&#x1F512; Locked':'&#x1F513; Lock';b.classList.toggle('lock-on',S.locked);}}
 
-// ════════════════════════════════════════
-// INIT
-// ════════════════════════════════════════
-function init() {
-  loadS();
-  applyTheme();
-  buildModal();
-
-  // Drop hint click
-  g('drop-hint')?.addEventListener('click', openModal);
-
-  // Header buttons
-  g('add-btn')?.addEventListener('click', openModal);
-  g('modal-close')?.addEventListener('click', closeModal);
-  g('wmodal')?.addEventListener('click', e=>{ if(e.target===g('wmodal')) closeModal(); });
-
-  g('theme-btn')?.addEventListener('click',()=>{
-    S.theme=S.theme==='dark'?'light':'dark'; applyTheme(); saveS();
-  });
-  g('contrast-btn')?.addEventListener('click',()=>{
-    S.theme=S.theme==='contrast'?'light':'contrast'; applyTheme(); saveS();
-  });
-  g('lock-btn')?.addEventListener('click',()=>{ S.locked=!S.locked; applyLock(); saveS(); });
-  g('fs-btn')?.addEventListener('click',()=>{
-    if(!document.fullscreenElement){ document.documentElement.requestFullscreen(); g('fs-btn').textContent='⛶ Exit Full'; }
-    else{ document.exitFullscreen(); g('fs-btn').textContent='⛶ Fullscreen'; }
-  });
-
-  document.querySelectorAll('.prof-btn').forEach(b=>{
-    b.addEventListener('click',()=>switchProfile(+b.dataset.p));
-  });
-
-  // Set correct active profile button
+// ── INIT ──
+function init(){
+  loadS(); applyTheme(); buildModal();
+  g('drop-hint')?.addEventListener('click',openModal);
+  g('add-btn')?.addEventListener('click',openModal);
+  g('modal-close')?.addEventListener('click',closeModal);
+  g('wmodal')?.addEventListener('click',e=>{if(e.target===g('wmodal'))closeModal();});
+  g('theme-btn')?.addEventListener('click',()=>{S.theme=S.theme==='dark'?'light':'dark';applyTheme();saveS();});
+  g('contrast-btn')?.addEventListener('click',()=>{S.theme=S.theme==='contrast'?'light':'contrast';applyTheme();saveS();});
+  g('lock-btn')?.addEventListener('click',()=>{S.locked=!S.locked;applyLock();saveS();});
+  g('fs-btn')?.addEventListener('click',()=>{if(!document.fullscreenElement){document.documentElement.requestFullscreen();g('fs-btn').textContent='&#x26F6; Exit Full';}else{document.exitFullscreen();g('fs-btn').textContent='&#x26F6; Fullscreen';}});
+  document.querySelectorAll('.prof-btn').forEach(b=>{b.addEventListener('click',()=>switchProfile(+b.dataset.p));});
   document.querySelectorAll('.prof-btn').forEach(b=>b.classList.toggle('on',+b.dataset.p===S.activeProfile));
-
-  // Render
-  renderProfile();
-  applyLock();
-
-  // Default widgets on first load
-  if(prof().widgets.length===0) {
-    ['clock','period','timer','notes','checklist'].forEach(t=>addWidget(t));
-  }
+  renderProfile(); applyLock();
+  if(prof().widgets.length===0){ ['clock','period','timer','notes','checklist'].forEach(t=>addWidget(t)); }
 }
-
-document.addEventListener('DOMContentLoaded', init);
+document.addEventListener('DOMContentLoaded',init);
 </script>
 </body>
 </html>
