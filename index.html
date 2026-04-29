@@ -252,7 +252,7 @@ label { font-size: 11px; color: var(--text2); display: block; margin-bottom: 3px
 .qr-box { display: flex; justify-content: center; padding: 12px; background: #fff; border-radius: 8px; margin-top: 8px; }
 .qr-empty { text-align: center; padding: 16px; color: var(--text2); font-size: 12px; }
 /* WEBCLIP */
-.wc-frame { width: 100%; height: 280px; border: 1px solid var(--border); border-radius: 8px; background: #fff; }
+.wc-frame { width: 100%; flex: 1; min-height: 0; border: 0; border-radius: 8px; background: #fff; }
 /* DICE / RANDOM */
 .big-result { font-size: clamp(36px,9vw,80px); font-weight: 200; color: var(--accent); text-align: center; line-height: 1; min-height: 80px; display: flex; align-items: center; justify-content: center; margin-bottom: 10px; }
 .dice-types { display: flex; flex-wrap: wrap; gap: 5px; justify-content: center; margin-bottom: 8px; }
@@ -1237,8 +1237,38 @@ function initQR(w,body) {
 // ── WEB CLIP ──
 function initWebClip(w,body) {
   w.state=w.state||{url:''};
-  body.innerHTML=`<div class="yt-controls"><input type="url" id="wcu-${w.id}" placeholder="https://..." value="${esc(w.state.url)}"><button class="btn btn-p sm" id="wcload-${w.id}">Load</button></div><div id="wcout-${w.id}">${w.state.url?'<iframe class="wc-frame" src="'+esc(w.state.url)+'" sandbox="allow-scripts allow-same-origin allow-forms"></iframe>':'<div class="yt-empty" style="aspect-ratio:unset;min-height:120px">Enter a URL to embed</div>'}</div>`;
-  g('wcload-'+w.id)?.addEventListener('click',()=>{let u=g('wcu-'+w.id)?.value.trim()||'';if(u&&!u.startsWith('http'))u='https://'+u;w.state.url=u;saveS();const out=g('wcout-'+w.id);if(!out)return;out.innerHTML=u?'<iframe class="wc-frame" src="'+esc(u)+'" sandbox="allow-scripts allow-same-origin allow-forms"></iframe>':'<div class="yt-empty" style="aspect-ratio:unset;min-height:120px">Enter a URL to embed</div>';});
+  body.style.cssText='display:flex;flex-direction:column;overflow:hidden;padding:0;gap:0;';
+
+  function toEmbedUrl(u) {
+    // Google Slides: /edit or /view → /embed
+    const slides=u.match(/docs\.google\.com\/presentation\/d\/([a-zA-Z0-9_-]+)/);
+    if(slides) return 'https://docs.google.com/presentation/d/'+slides[1]+'/embed?start=false&loop=false&delayms=5000';
+    // Google Docs: → /preview
+    const docs=u.match(/docs\.google\.com\/document\/d\/([a-zA-Z0-9_-]+)/);
+    if(docs) return 'https://docs.google.com/document/d/'+docs[1]+'/preview';
+    // Google Sheets: → /htmlview
+    const sheets=u.match(/docs\.google\.com\/spreadsheets\/d\/([a-zA-Z0-9_-]+)/);
+    if(sheets) return 'https://docs.google.com/spreadsheets/d/'+sheets[1]+'/htmlview';
+    return u;
+  }
+
+  function renderFrame(u) {
+    const out=g('wcout-'+w.id); if(!out) return;
+    if(!u){out.innerHTML='<div class="yt-empty" style="aspect-ratio:unset;flex:1;min-height:80px">Enter a URL above to embed a page or Google Slides</div>';return;}
+    const embed=toEmbedUrl(u);
+    const converted=embed!==u;
+    out.innerHTML=(converted?'<div style="font-size:10px;color:var(--text2);padding:2px 8px;background:var(--surface2);">Auto-converted to embed format</div>':'')+
+      '<iframe class="wc-frame" src="'+esc(embed)+'" allow="fullscreen" sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-presentation"></iframe>';
+  }
+
+  body.innerHTML='<div class="yt-controls"><input type="url" id="wcu-'+w.id+'" placeholder="Paste URL or Google Slides link..." value="'+esc(w.state.url)+'"><button class="btn btn-p sm" id="wcload-'+w.id+'">Load</button></div><div id="wcout-'+w.id+'" style="flex:1;display:flex;flex-direction:column;min-height:0;"></div>';
+  g('wcload-'+w.id)?.addEventListener('click',()=>{
+    let u=(g('wcu-'+w.id)?.value||'').trim();
+    if(u&&!u.startsWith('http'))u='https://'+u;
+    w.state.url=u; saveS(); renderFrame(u);
+  });
+  g('wcu-'+w.id)?.addEventListener('keydown',e=>{if(e.key==='Enter')g('wcload-'+w.id)?.click();});
+  if(w.state.url) renderFrame(w.state.url);
 }
 
 // ── DICE ──
