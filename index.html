@@ -341,14 +341,14 @@ details[open] > summary::before { transform: rotate(90deg); }
       <button class="auth-tab" data-tab="register">Register</button>
     </div>
     <div id="tab-signin" class="auth-form">
-      <div><label>Username</label><input type="text" id="l-user" placeholder="Enter username" autocomplete="username"></div>
+      <div><label>Email</label><input type="email" id="l-email" placeholder="Enter email address" autocomplete="email"></div>
       <div><label>Password</label><input type="password" id="l-pass" placeholder="Enter password" autocomplete="current-password"></div>
       <button class="btn btn-p" id="l-submit">Sign In</button>
       <div class="auth-err" id="l-err"></div>
     </div>
     <div id="tab-register" class="auth-form" style="display:none">
-      <div><label>Username</label><input type="text" id="r-user" placeholder="Choose a username" autocomplete="username"></div>
-      <div><label>Password</label><input type="password" id="r-pass" placeholder="At least 4 characters" autocomplete="new-password"></div>
+      <div><label>Email</label><input type="email" id="r-email" placeholder="Enter email address" autocomplete="email"></div>
+      <div><label>Password</label><input type="password" id="r-pass" placeholder="At least 6 characters" autocomplete="new-password"></div>
       <div><label>Confirm Password</label><input type="password" id="r-pass2" placeholder="Repeat password" autocomplete="new-password"></div>
       <button class="btn btn-p" id="r-submit">Create Account</button>
       <div class="auth-err" id="r-err"></div>
@@ -391,6 +391,9 @@ details[open] > summary::before { transform: rotate(90deg); }
 </div>
 </div><!-- end #app -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
 <script>
 const DEFS = [
   { type:'clock',     icon:'&#x1F550;', label:'Clock',           desc:'Live clock & date' },
@@ -434,90 +437,149 @@ let S = {
   profiles: [{ widgets:[] },{ widgets:[] },{ widgets:[] },{ widgets:[] }]
 };
 
-// ── AUTH ──
-let currentUser = null;
-function storageKey() { return 'tdash-v5-'+(currentUser||'guest'); }
+// ── FIREBASE ──
+const firebaseConfig = {
+  apiKey: "AIzaSyCtfgEpffjLTXuxRujL--7vAhJsD47noYM",
+  authDomain: "teachdash-c3dee.firebaseapp.com",
+  projectId: "teachdash-c3dee",
+  storageBucket: "teachdash-c3dee.firebasestorage.app",
+  messagingSenderId: "121635702303",
+  appId: "1:121635702303:web:502424050023b938b2b72a",
+  measurementId: "G-QVZ8GF010C"
+};
+firebase.initializeApp(firebaseConfig);
+const auth = firebase.auth();
+const db   = firebase.firestore();
+
+// ── AUTH & STORAGE ──
+let currentUser  = null; // Firebase user object, or the string 'guest'
+let _saveTimer   = null;
+let _pendingSave = false;
+
 function loadS() {
+  // Guest only: read from localStorage (with legacy key migration)
   try {
-    let r=localStorage.getItem(storageKey());
-    // One-time migration: carry pre-login data into guest account
-    if(!r && currentUser==='guest') r=localStorage.getItem('tdash-v5');
-    if(r) S={...S,...JSON.parse(r)};
-  } catch(e){}
+    let r = localStorage.getItem('tdash-v5-guest');
+    if (!r) r = localStorage.getItem('tdash-v5');
+    if (r) S = { ...S, ...JSON.parse(r) };
+  } catch(e) {}
 }
-function saveS() { try { localStorage.setItem(storageKey(),JSON.stringify(S)); } catch(e){} }
+
+function saveS() {
+  if (currentUser && currentUser !== 'guest') {
+    // Cloud: debounced Firestore write
+    _pendingSave = true;
+    clearTimeout(_saveTimer);
+    _saveTimer = setTimeout(() => {
+      if (!_pendingSave) return;
+      _pendingSave = false;
+      db.collection('users').doc(currentUser.uid).set({ dashboard: S })
+        .catch(e => console.warn('Firestore save error:', e));
+    }, 800);
+  } else {
+    // Guest: localStorage
+    try { localStorage.setItem('tdash-v5-guest', JSON.stringify(S)); } catch(e) {}
+  }
+}
+
+async function flushSave() {
+  if (!_pendingSave) return;
+  clearTimeout(_saveTimer);
+  _pendingSave = false;
+  if (currentUser && currentUser !== 'guest') {
+    try { await db.collection('users').doc(currentUser.uid).set({ dashboard: S }); } catch(e) {}
+  }
+}
+
 function prof() { return S.profiles[S.activeProfile]; }
 
-async function hashPass(p) {
-  const buf=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(p));
-  return Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,'0')).join('');
-}
-function getUsers() { try{return JSON.parse(localStorage.getItem('tdash-users')||'{}');}catch(e){return{};} }
-function saveUsers(u) { localStorage.setItem('tdash-users',JSON.stringify(u)); }
-
-async function doLogin(user,pass) {
-  if(!user) return 'Username required.';
-  const users=getUsers();
-  if(!users[user]) return 'Username not found.';
-  const h=await hashPass(pass);
-  if(users[user].hash!==h) return 'Incorrect password.';
-  return null;
-}
-async function doRegister(user,pass,pass2) {
-  if(!user.trim()) return 'Username required.';
-  if(pass.length<4) return 'Password must be at least 4 characters.';
-  if(pass!==pass2) return 'Passwords do not match.';
-  const users=getUsers();
-  if(users[user]) return 'Username already taken.';
-  users[user]={hash:await hashPass(pass),created:Date.now()};
-  saveUsers(users); return null;
+function fbErrMsg(code) {
+  const map = {
+    'auth/invalid-email':         'Invalid email address.',
+    'auth/user-not-found':        'No account found with that email.',
+    'auth/wrong-password':        'Incorrect password.',
+    'auth/invalid-credential':    'Incorrect email or password.',
+    'auth/email-already-in-use':  'An account with that email already exists.',
+    'auth/weak-password':         'Password must be at least 6 characters.',
+    'auth/too-many-requests':     'Too many attempts. Please try again later.',
+    'auth/network-request-failed':'Network error. Check your connection.',
+  };
+  return map[code] || 'Something went wrong. Please try again.';
 }
 
-function loginUser(username) {
-  currentUser=username;
-  localStorage.setItem('tdash-last-user',username);
-  g('login-screen').style.display='none';
-  g('app').style.display='block';
-  const ud=g('user-display'); if(ud) ud.textContent=username==='guest'?'Guest':username;
-  S={theme:'light',locked:false,activeProfile:0,profiles:[{widgets:[]},{widgets:[]},{widgets:[]},{widgets:[]}]};
+async function showDashboard(fbUser) {
+  currentUser = fbUser || 'guest';
+  const displayName = fbUser ? (fbUser.displayName || fbUser.email) : 'Guest';
+
+  // Reset state, then load saved data
+  S = { theme:'light', locked:false, activeProfile:0, profiles:[{widgets:[]},{widgets:[]},{widgets:[]},{widgets:[]}] };
+  if (fbUser) {
+    try {
+      const doc = await db.collection('users').doc(fbUser.uid).get();
+      if (doc.exists && doc.data().dashboard) S = { ...S, ...doc.data().dashboard };
+    } catch(e) { console.warn('Firestore load failed, using defaults:', e); }
+  } else {
+    loadS();
+  }
+
+  const ud = g('user-display');
+  if (ud) ud.textContent = displayName;
+  g('login-screen').style.display = 'none';
+  g('app').style.display = 'block';
   initDashboard();
 }
 
 function initAuth() {
-  // Apply system colour preference before user logs in
-  if(window.matchMedia('(prefers-color-scheme: dark)').matches) document.body.dataset.theme='dark';
-  // Pre-fill last username
-  const last=localStorage.getItem('tdash-last-user');
-  if(last && g('l-user')) g('l-user').value=last;
+  if (window.matchMedia('(prefers-color-scheme: dark)').matches) document.body.dataset.theme = 'dark';
+
+  // Auto-login if Firebase session is still active
+  auth.onAuthStateChanged(user => {
+    if (user && g('app').style.display === 'none') showDashboard(user);
+  });
 
   // Tab switching
-  document.querySelectorAll('.auth-tab').forEach(btn=>{
-    btn.addEventListener('click',()=>{
-      document.querySelectorAll('.auth-tab').forEach(b=>b.classList.toggle('on',b===btn));
-      g('tab-signin').style.display=btn.dataset.tab==='signin'?'flex':'none';
-      g('tab-register').style.display=btn.dataset.tab==='register'?'flex':'none';
+  document.querySelectorAll('.auth-tab').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.auth-tab').forEach(b => b.classList.toggle('on', b === btn));
+      g('tab-signin').style.display  = btn.dataset.tab === 'signin'   ? 'flex' : 'none';
+      g('tab-register').style.display = btn.dataset.tab === 'register' ? 'flex' : 'none';
     });
   });
 
   // Sign in
-  g('l-submit')?.addEventListener('click',async()=>{
-    const u=(g('l-user')?.value||'').trim(), p=g('l-pass')?.value||'';
-    const err=await doLogin(u,p);
-    const el=g('l-err'); if(el) el.textContent=err||'';
-    if(!err) loginUser(u);
+  g('l-submit')?.addEventListener('click', async () => {
+    const email = (g('l-email')?.value || '').trim();
+    const pass  = g('l-pass')?.value || '';
+    const errEl = g('l-err');
+    if (errEl) errEl.textContent = '';
+    if (!email) { if (errEl) errEl.textContent = 'Email required.'; return; }
+    try {
+      await auth.signInWithEmailAndPassword(email, pass);
+      // onAuthStateChanged fires → showDashboard
+    } catch(e) {
+      if (errEl) errEl.textContent = fbErrMsg(e.code);
+    }
   });
-  [g('l-user'),g('l-pass')].forEach(el=>el?.addEventListener('keydown',e=>{ if(e.key==='Enter') g('l-submit')?.click(); }));
+  [g('l-email'), g('l-pass')].forEach(el => el?.addEventListener('keydown', e => { if (e.key === 'Enter') g('l-submit')?.click(); }));
 
   // Register
-  g('r-submit')?.addEventListener('click',async()=>{
-    const u=(g('r-user')?.value||'').trim(), p=g('r-pass')?.value||'', p2=g('r-pass2')?.value||'';
-    const err=await doRegister(u,p,p2);
-    const el=g('r-err'); if(el) el.textContent=err||'';
-    if(!err) loginUser(u);
+  g('r-submit')?.addEventListener('click', async () => {
+    const email = (g('r-email')?.value || '').trim();
+    const pass  = g('r-pass')?.value  || '';
+    const pass2 = g('r-pass2')?.value || '';
+    const errEl = g('r-err');
+    if (errEl) errEl.textContent = '';
+    if (pass !== pass2) { if (errEl) errEl.textContent = 'Passwords do not match.'; return; }
+    try {
+      await auth.createUserWithEmailAndPassword(email, pass);
+      // onAuthStateChanged fires → showDashboard
+    } catch(e) {
+      if (errEl) errEl.textContent = fbErrMsg(e.code);
+    }
   });
 
   // Guest
-  g('guest-btn')?.addEventListener('click',()=>loginUser('guest'));
+  g('guest-btn')?.addEventListener('click', () => showDashboard(null));
 }
 
 let _uid=1;
@@ -1214,7 +1276,7 @@ function applyLock(){document.body.classList.toggle('locked',S.locked);const b=g
 
 // ── INIT ──
 function initDashboard(){
-  loadS(); applyTheme(); buildModal();
+  applyTheme(); buildModal();
   g('drop-hint')?.addEventListener('click',openModal);
   g('add-btn')?.addEventListener('click',openModal);
   g('modal-close')?.addEventListener('click',closeModal);
@@ -1223,12 +1285,17 @@ function initDashboard(){
   g('contrast-btn')?.addEventListener('click',()=>{S.theme=S.theme==='contrast'?'light':'contrast';applyTheme();saveS();});
   g('lock-btn')?.addEventListener('click',()=>{S.locked=!S.locked;applyLock();saveS();});
   g('fs-btn')?.addEventListener('click',()=>{if(!document.fullscreenElement){document.documentElement.requestFullscreen();g('fs-btn').textContent='Exit Full';}else{document.exitFullscreen();g('fs-btn').textContent='Fullscreen';}});
-  g('logout-btn')?.addEventListener('click',()=>{
-    prof().widgets.forEach(w=>cleanup(w.id));
-    document.querySelectorAll('.widget').forEach(el=>el.remove());
-    currentUser=null; S={theme:'light',locked:false,activeProfile:0,profiles:[{widgets:[]},{widgets:[]},{widgets:[]},{widgets:[]}]};
-    g('app').style.display='none'; g('login-screen').style.display='flex';
-    if(g('l-pass')) g('l-pass').value='';
+  g('logout-btn')?.addEventListener('click', async () => {
+    await flushSave();
+    prof().widgets.forEach(w => cleanup(w.id));
+    document.querySelectorAll('.widget').forEach(el => el.remove());
+    const wasFirebase = currentUser && currentUser !== 'guest';
+    currentUser = null;
+    S = { theme:'light', locked:false, activeProfile:0, profiles:[{widgets:[]},{widgets:[]},{widgets:[]},{widgets:[]}] };
+    g('app').style.display = 'none';
+    g('login-screen').style.display = 'flex';
+    if (g('l-pass')) g('l-pass').value = '';
+    if (wasFirebase) await auth.signOut();
   });
   document.querySelectorAll('.prof-btn').forEach(b=>{b.addEventListener('click',()=>switchProfile(+b.dataset.p));});
   document.querySelectorAll('.prof-btn').forEach(b=>b.classList.toggle('on',+b.dataset.p===S.activeProfile));
