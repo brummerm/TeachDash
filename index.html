@@ -1121,15 +1121,46 @@ function initCalc(w,body) {
 function initYoutube(w,body) {
   w.state=w.state||{url:''};
   body.style.display='flex'; body.style.flexDirection='column'; body.style.overflow='hidden';
-  function getVid(url){const m=url.match(/(?:v=|youtu\.be\/|embed\/|shorts\/)([a-zA-Z0-9_-]{11})/);return m?m[1]:null;}
-  function renderEmbed(vid){
-    const a=g('yta-'+w.id); if(!a) return;
-    if(vid) a.innerHTML=`<iframe style="flex:1;width:100%;min-height:0;border:0;border-radius:8px;background:#000" src="https://www.youtube.com/embed/${vid}?rel=0" allowfullscreen></iframe>`;
-    else a.innerHTML='<div style="flex:1;display:flex;align-items:center;justify-content:center;background:var(--surface2);border-radius:8px;border:2px dashed var(--border);color:var(--text2);font-size:13px;min-height:80px">Paste a YouTube URL above</div>';
+
+  // Returns {vid, list} from any YouTube URL
+  function parseYT(url) {
+    if(!url) return {vid:null,list:null};
+    try {
+      const u=new URL(url.startsWith('http')?url:'https://'+url);
+      const vid=u.searchParams.get('v')
+        ||url.match(/youtu\.be\/([a-zA-Z0-9_-]{11})/)?.[1]
+        ||url.match(/\/shorts\/([a-zA-Z0-9_-]{11})/)?.[1]
+        ||null;
+      const list=u.searchParams.get('list')||null;
+      return {vid,list};
+    } catch(e){ return {vid:null,list:null}; }
   }
-  body.innerHTML=`<div class="yt-controls"><input type="url" class="yt-url" id="ytu-${w.id}" placeholder="Paste YouTube URL..." value="${esc(w.state.url)}"><button class="btn btn-p sm" id="ytload-${w.id}">Load</button><button class="btn btn-s sm" id="ytclr-${w.id}">&#x2715;</button></div><div id="yta-${w.id}" style="flex:1;display:flex;flex-direction:column;min-height:0;"></div>`;
-  renderEmbed(w.state.url?getVid(w.state.url):null);
-  function load(){const u=g('ytu-'+w.id)?.value.trim()||'';w.state.url=u;saveS();renderEmbed(getVid(u));}
+
+  function buildSrc({vid,list}) {
+    if(!vid&&!list) return null;
+    const p=new URLSearchParams({rel:'0',modestbranding:'1'});
+    if(list) p.set('list',list);
+    if(vid) return 'https://www.youtube.com/embed/'+vid+'?'+p;
+    return 'https://www.youtube.com/embed/videoseries?'+p; // playlist-only
+  }
+
+  function renderEmbed(url) {
+    const a=g('yta-'+w.id); if(!a) return;
+    const parsed=parseYT(url);
+    const src=buildSrc(parsed);
+    if(src){
+      const badge=parsed.list
+        ?'<div style="font-size:10px;color:var(--text2);padding:2px 8px;background:var(--surface2);border-radius:4px;margin-bottom:4px;">&#x1F4CB; Playlist — use player arrows to navigate</div>'
+        :'';
+      a.innerHTML=badge+'<iframe style="flex:1;width:100%;min-height:0;border:0;border-radius:8px;background:#000" src="'+esc(src)+'" allowfullscreen allow="autoplay;encrypted-media"></iframe>';
+    } else {
+      a.innerHTML='<div style="flex:1;display:flex;align-items:center;justify-content:center;background:var(--surface2);border-radius:8px;border:2px dashed var(--border);color:var(--text2);font-size:13px;min-height:80px;text-align:center;padding:12px">Paste a YouTube video or playlist URL above</div>';
+    }
+  }
+
+  body.innerHTML='<div class="yt-controls"><input type="url" class="yt-url" id="ytu-'+w.id+'" placeholder="YouTube video or playlist URL..." value="'+esc(w.state.url)+'"><button class="btn btn-p sm" id="ytload-'+w.id+'">Load</button><button class="btn btn-s sm" id="ytclr-'+w.id+'">&#x2715;</button></div><div id="yta-'+w.id+'" style="flex:1;display:flex;flex-direction:column;min-height:0;"></div>';
+  renderEmbed(w.state.url||null);
+  function load(){const u=(g('ytu-'+w.id)?.value||'').trim();w.state.url=u;saveS();renderEmbed(u||null);}
   g('ytload-'+w.id)?.addEventListener('click',load);
   g('ytu-'+w.id)?.addEventListener('keydown',e=>{if(e.key==='Enter')load();});
   g('ytclr-'+w.id)?.addEventListener('click',()=>{const inp=g('ytu-'+w.id);if(inp)inp.value='';w.state.url='';saveS();renderEmbed(null);});
