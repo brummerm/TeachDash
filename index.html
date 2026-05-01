@@ -253,6 +253,18 @@ label { font-size: 11px; color: var(--text2); display: block; margin-bottom: 3px
 .qr-empty { text-align: center; padding: 16px; color: var(--text2); font-size: 12px; }
 /* WEBCLIP */
 .wc-frame { width: 100%; flex: 1; min-height: 0; border: 0; border-radius: 8px; background: #fff; }
+/* SEATING CHART */
+.seat-grid { display: grid; gap: 3px; margin-top: 6px; }
+.seat-cell { background: var(--surface2); border: 1px solid var(--border); border-radius: 5px; padding: 3px 2px; text-align: center; cursor: pointer; font-size: 10px; min-height: 34px; display: flex; align-items: center; justify-content: center; transition: all 0.1s; word-break: break-word; line-height: 1.2; }
+.seat-cell:hover { border-color: var(--accent); background: var(--surface); }
+.seat-cell.occupied { background: var(--accent); color: #fff; border-color: var(--accent); font-weight: 600; }
+.seat-cell.occupied:hover { background: var(--accent2); }
+.seat-empty-label { font-size: 14px; color: var(--border); font-weight: 300; }
+/* ANNOUNCEMENT TICKER */
+.ticker-display { font-size: clamp(15px,3vw,26px); font-weight: 600; text-align: center; padding: 14px 12px; background: var(--surface2); border-radius: 8px; min-height: 80px; display: flex; align-items: center; justify-content: center; border: 1px solid var(--border); margin-bottom: 8px; word-break: break-word; line-height: 1.3; }
+.ticker-nav { display: flex; gap: 6px; justify-content: center; align-items: center; margin-bottom: 8px; }
+.ticker-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--border); cursor: pointer; transition: background 0.15s; flex-shrink: 0; }
+.ticker-dot.on { background: var(--accent); }
 /* DICE / RANDOM */
 .big-result { font-size: clamp(36px,9vw,80px); font-weight: 200; color: var(--accent); text-align: center; line-height: 1; min-height: 80px; display: flex; align-items: center; justify-content: center; margin-bottom: 10px; }
 .dice-types { display: flex; flex-wrap: wrap; gap: 5px; justify-content: center; margin-bottom: 8px; }
@@ -411,6 +423,8 @@ const DEFS = [
   { type:'webclip',   icon:'&#x1F310;', label:'Web Clip',         desc:'Embed any webpage' },
   { type:'dice',      icon:'&#x1F3B2;', label:'Dice Roller',      desc:'Roll any dice type' },
   { type:'random',    icon:'&#x1F500;', label:'Random Number',    desc:'Random number range' },
+  { type:'seating',   icon:'&#x1F4BA;', label:'Seating Chart',    desc:'Drag-and-drop class seating' },
+  { type:'ticker',    icon:'&#x1F4E3;', label:'Announcements',     desc:'Rotating classroom announcements' },
 ];
 
 // Default pixel sizes [width, height] per widget type
@@ -430,6 +444,8 @@ const DEFAULT_SIZES = {
   webclip:    [500, 395],
   dice:       [240, 255],
   random:     [240, 205],
+  seating:    [520, 420],
+  ticker:     [420, 240],
 };
 
 let S = {
@@ -778,7 +794,7 @@ function addWidget(type){
 }
 function initWidget(w){
   const body=g('wb-'+w.id); if(!body) return;
-  const fn={clock:initClock,period:initPeriod,timer:initTimer,stopwatch:initStopwatch,pomodoro:initPomodoro,notes:initNotes,checklist:initChecklist,calculator:initCalc,youtube:initYoutube,picker:initPicker,noise:initNoise,qrcode:initQR,webclip:initWebClip,dice:initDice,random:initRandom}[w.type];
+  const fn={clock:initClock,period:initPeriod,timer:initTimer,stopwatch:initStopwatch,pomodoro:initPomodoro,notes:initNotes,checklist:initChecklist,calculator:initCalc,youtube:initYoutube,picker:initPicker,noise:initNoise,qrcode:initQR,webclip:initWebClip,dice:initDice,random:initRandom,seating:initSeating,ticker:initTicker}[w.type];
   if(fn) fn(w,body);
 }
 
@@ -1322,6 +1338,146 @@ function initDice(w,body) {
 function initRandom(w,body) {
   body.innerHTML=`<div class="big-result" id="rres-${w.id}">?</div><div class="rand-range"><input type="number" id="rmin-${w.id}" value="1"><span>to</span><input type="number" id="rmax-${w.id}" value="100"></div><div class="btn-row"><button class="btn btn-p" id="rgen-${w.id}">&#x1F500; Generate</button></div>`;
   g('rgen-'+w.id)?.addEventListener('click',()=>{const min=+g('rmin-'+w.id)?.value||1,max=+g('rmax-'+w.id)?.value||100;const n=Math.floor(Math.random()*(max-min+1))+min;const r=g('rres-'+w.id);if(r)r.textContent=n;});
+}
+
+// ── SEATING CHART ──
+function initSeating(w,body) {
+  if(!w.state||typeof w.state!=='object') w.state={};
+  if(!Array.isArray(w.state.charts)) w.state.charts=[{name:'Period 1',rows:4,cols:6,seats:{}}];
+  if(!Number.isInteger(w.state.active)||w.state.active>=w.state.charts.length) w.state.active=0;
+  const s=w.state;
+  function activeC(){ return s.charts[s.active]; }
+
+  function render() {
+    const c=activeC();
+    const tabs=s.charts.map((ch,i)=>`<button class="toggle-btn sm${i===s.active?' on':''}" data-ci="${i}" title="${esc(ch.name)}">${esc(ch.name.length>8?ch.name.slice(0,7)+'…':ch.name)}</button>`).join('');
+    const canAdd=s.charts.length<8;
+    let gridHtml='';
+    for(let r=0;r<c.rows;r++){
+      for(let col=0;col<c.cols;col++){
+        const key=r+'_'+col;
+        const name=c.seats[key]||'';
+        gridHtml+=`<div class="seat-cell${name?' occupied':''}" data-key="${key}">${name?esc(name):'<span class="seat-empty-label">+</span>'}</div>`;
+      }
+    }
+    body.innerHTML=`
+      <div style="display:flex;gap:4px;flex-wrap:wrap;margin-bottom:6px;align-items:center;">
+        ${tabs}${canAdd?`<button class="copy-day-btn" id="saddcls-${w.id}">+ Class</button>`:''}
+      </div>
+      <div class="seat-grid" id="sgrid-${w.id}" style="grid-template-columns:repeat(${c.cols},1fr);">${gridHtml}</div>
+      <details style="margin-top:8px">
+        <summary>Edit: ${esc(c.name)}</summary>
+        <div style="display:flex;gap:4px;margin:6px 0 4px;flex-wrap:wrap;">
+          <input type="text" id="sclsname-${w.id}" value="${esc(c.name)}" style="flex:1;font-size:11px;padding:4px 6px;" placeholder="Class name">
+          <button class="btn btn-s sm" id="srenm-${w.id}">Rename</button>
+          ${s.charts.length>1?`<button class="btn btn-s sm" id="sdel-${w.id}" style="color:var(--danger)">Delete</button>`:''}
+        </div>
+        <div style="display:flex;gap:8px;align-items:center;margin-bottom:6px;font-size:11px;color:var(--text2);">
+          <span>Rows:</span><input type="number" id="srows-${w.id}" value="${c.rows}" min="1" max="12" style="width:48px;text-align:center;padding:3px;">
+          <span>Cols:</span><input type="number" id="scols-${w.id}" value="${c.cols}" min="1" max="12" style="width:48px;text-align:center;padding:3px;">
+          <button class="btn btn-s sm" id="sapply-${w.id}">Apply grid</button>
+        </div>
+        <div style="font-size:10px;color:var(--text2);margin-bottom:6px;">Click any seat to assign or clear a student name.</div>
+        <button class="btn btn-s sm" id="sclear-${w.id}" style="width:100%;color:var(--danger)">Clear all seats</button>
+      </details>`;
+
+    body.querySelectorAll('.seat-cell').forEach(cell=>{
+      cell.addEventListener('click',()=>{
+        const key=cell.dataset.key;
+        const cur=activeC().seats[key]||'';
+        const inp=prompt('Student name (leave blank to clear):',cur);
+        if(inp===null) return;
+        if(inp.trim()) activeC().seats[key]=inp.trim();
+        else delete activeC().seats[key];
+        saveS(); render();
+      });
+    });
+    body.querySelectorAll('[data-ci]').forEach(btn=>{
+      btn.addEventListener('click',()=>{ s.active=+btn.dataset.ci; saveS(); render(); });
+    });
+    g('saddcls-'+w.id)?.addEventListener('click',()=>{
+      if(s.charts.length>=8) return;
+      s.charts.push({name:'Period '+(s.charts.length+1),rows:4,cols:6,seats:{}});
+      s.active=s.charts.length-1; saveS(); render();
+    });
+    g('srenm-'+w.id)?.addEventListener('click',()=>{ const n=g('sclsname-'+w.id)?.value.trim(); if(n){activeC().name=n;saveS();render();} });
+    g('sdel-'+w.id)?.addEventListener('click',()=>{
+      if(s.charts.length<=1||!confirm('Delete "'+activeC().name+'"?')) return;
+      s.charts.splice(s.active,1); s.active=Math.min(s.active,s.charts.length-1); saveS(); render();
+    });
+    g('sapply-'+w.id)?.addEventListener('click',()=>{
+      activeC().rows=Math.max(1,Math.min(12,+g('srows-'+w.id)?.value||4));
+      activeC().cols=Math.max(1,Math.min(12,+g('scols-'+w.id)?.value||6));
+      saveS(); render();
+    });
+    g('sclear-'+w.id)?.addEventListener('click',()=>{ if(!confirm('Clear all seats in '+activeC().name+'?')) return; activeC().seats={}; saveS(); render(); });
+  }
+  render();
+}
+
+// ── ANNOUNCEMENT TICKER ──
+function initTicker(w,body) {
+  if(!w.state||typeof w.state!=='object') w.state={};
+  if(!Array.isArray(w.state.messages)) w.state.messages=['Welcome to class!','Check the board for today\'s agenda.'];
+  if(!Number.isInteger(w.state.current)) w.state.current=0;
+  if(!w.state.interval) w.state.interval=6;
+  const s=w.state;
+  let iv=null;
+
+  function clamp(){ if(!s.messages.length){s.current=0;return;} s.current=((s.current%s.messages.length)+s.messages.length)%s.messages.length; }
+
+  function updateDisplay(){
+    clamp();
+    const disp=g('tkdisp-'+w.id);
+    if(disp) disp.textContent=s.messages.length?s.messages[s.current]:'No announcements yet.';
+    const dotsEl=g('tkdots-'+w.id);
+    if(dotsEl){
+      dotsEl.innerHTML=s.messages.map((_,i)=>`<div class="ticker-dot${i===s.current?' on':''}" data-di="${i}"></div>`).join('');
+      dotsEl.querySelectorAll('.ticker-dot').forEach(d=>{ d.addEventListener('click',()=>{ s.current=+d.dataset.di; clearInterval(iv); updateDisplay(); startAuto(); }); });
+    }
+    const ctr=g('tkctr-'+w.id);
+    if(ctr) ctr.textContent=s.messages.length?`${s.current+1} / ${s.messages.length}`:'';
+  }
+
+  function startAuto(){
+    clearInterval(iv);
+    if(s.messages.length<=1) return;
+    iv=setInterval(()=>{ s.current=(s.current+1)%s.messages.length; updateDisplay(); },(s.interval||6)*1000);
+  }
+
+  body.innerHTML=`
+    <div class="ticker-display" id="tkdisp-${w.id}"></div>
+    <div class="ticker-nav">
+      <button class="btn btn-s sm" id="tkprev-${w.id}">&#x25C0;</button>
+      <div id="tkdots-${w.id}" style="display:flex;gap:5px;align-items:center;flex-wrap:wrap;justify-content:center;max-width:160px;"></div>
+      <button class="btn btn-s sm" id="tknext-${w.id}">&#x25B6;</button>
+    </div>
+    <div style="text-align:center;font-size:11px;color:var(--text2);margin-bottom:6px;" id="tkctr-${w.id}"></div>
+    <details>
+      <summary>Edit announcements</summary>
+      <div style="margin-top:6px;">
+        <label>One announcement per line</label>
+        <textarea id="tkmsgs-${w.id}" style="min-height:80px;resize:vertical;margin-top:4px;" placeholder="Welcome to class!&#10;Projects due Friday&#10;No class Tuesday">${esc(s.messages.join('\n'))}</textarea>
+        <div style="display:flex;gap:8px;align-items:center;margin-top:6px;font-size:11px;color:var(--text2);">
+          <span>Rotate every</span>
+          <input type="number" id="tkint-${w.id}" value="${s.interval||6}" min="2" max="120" style="width:52px;text-align:center;">
+          <span>seconds</span>
+        </div>
+        <button class="btn btn-p sm" id="tksave-${w.id}" style="width:100%;margin-top:8px;">Save</button>
+      </div>
+    </details>`;
+
+  g('tkprev-'+w.id)?.addEventListener('click',()=>{ if(!s.messages.length)return; s.current=(s.current-1+s.messages.length)%s.messages.length; clearInterval(iv); updateDisplay(); startAuto(); });
+  g('tknext-'+w.id)?.addEventListener('click',()=>{ if(!s.messages.length)return; s.current=(s.current+1)%s.messages.length; clearInterval(iv); updateDisplay(); startAuto(); });
+  g('tksave-'+w.id)?.addEventListener('click',()=>{
+    const raw=g('tkmsgs-'+w.id)?.value||'';
+    s.messages=raw.split('\n').map(l=>l.trim()).filter(Boolean);
+    s.interval=Math.max(2,Math.min(120,+g('tkint-'+w.id)?.value||6));
+    s.current=0; saveS(); clearInterval(iv); updateDisplay(); startAuto();
+  });
+
+  updateDisplay(); startAuto();
+  cleanups[w.id]=()=>clearInterval(iv);
 }
 
 // ── SOUND ALERT ──
