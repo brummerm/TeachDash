@@ -301,6 +301,81 @@ details > summary { cursor: pointer; font-size: 11px; color: var(--text2); margi
 details > summary::before { content: '\25B6'; font-size: 8px; transition: transform 0.15s; }
 details[open] > summary::before { transform: rotate(90deg); }
 .config-block { display: flex; flex-direction: column; gap: 6px; margin-top: 8px; }
+/* DO NOW / EXIT TICKET */
+.donow-wrap { display: flex; flex-direction: column; height: 100%; gap: 8px; }
+.donow-mode-row { display: flex; gap: 4px; }
+.donow-tag { display: inline-block; padding: 4px 10px; border-radius: 6px; font-size: 11px; font-weight: 800; letter-spacing: 1.5px; text-transform: uppercase; align-self: flex-start; }
+.donow-tag.donow { background: var(--accent); color: #fff; }
+.donow-tag.exit { background: #f59e0b; color: #fff; }
+.donow-display { flex: 1; min-height: 0; display: flex; flex-direction: column; gap: 8px; padding: 12px 14px; background: var(--surface2); border: 1px solid var(--border); border-radius: 10px; overflow: auto; }
+.donow-prompt { font-size: clamp(18px, 3vw, 30px); font-weight: 600; line-height: 1.35; color: var(--text); white-space: pre-wrap; word-break: break-word; }
+.donow-sub { font-size: 13px; color: var(--text2); font-style: italic; line-height: 1.45; }
+.donow-edit { display: flex; flex-direction: column; gap: 6px; flex: 1; min-height: 0; }
+.donow-edit textarea { flex: 1; min-height: 90px; resize: none; font-size: 14px; line-height: 1.5; }
+.donow-edit textarea.sub { flex: 0 0 auto; min-height: 50px; max-height: 70px; }
+/* ROTATION TIMER */
+.rot-station { font-size: clamp(20px,4vw,32px); font-weight: 700; color: var(--accent); text-align: center; line-height: 1.1; margin-bottom: 4px; word-break: break-word; }
+.rot-station-meta { font-size: 11px; color: var(--text2); text-align: center; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; }
+.rot-list { display: flex; flex-direction: column; gap: 3px; max-height: 130px; overflow-y: auto; margin-top: 8px; }
+.rot-item { display: flex; align-items: center; gap: 6px; padding: 5px 8px; border-radius: 6px; background: var(--surface2); border: 1px solid var(--border); font-size: 12px; }
+.rot-item.cur { background: var(--accent); color: #fff; border-color: var(--accent); font-weight: 600; }
+.rot-item input { flex: 1; background: transparent; border: none; color: inherit; outline: none; font-size: 12px; padding: 0; }
+.rot-item.cur input { color: #fff; }
+.rot-item .rot-del { background: none; border: none; color: var(--text2); cursor: pointer; opacity: 0.45; font-size: 12px; }
+.rot-item.cur .rot-del { color: #fff; }
+.rot-item .rot-del:hover { opacity: 1; color: var(--danger); }
+.rot-cfg { display: flex; align-items: center; gap: 6px; font-size: 11px; color: var(--text2); margin-top: 6px; }
+.rot-cfg input[type="number"] { width: 60px; text-align: center; font-size: 12px; padding: 4px 6px; }
+/* WHITEBOARD */
+.wb-canvas { flex: 1; min-height: 0; width: 100%; background: #fff; border: 1px solid var(--border); border-radius: 8px; cursor: crosshair; touch-action: none; display: block; }
+[data-theme="dark"] .wb-canvas { background: #1a1d27; }
+[data-theme="contrast"] .wb-canvas { background: #000; border-color: #ffdd00; }
+.wb-tools { display: flex; gap: 6px; align-items: center; padding: 6px 0; flex-wrap: wrap; }
+.wb-color { width: 24px; height: 24px; border-radius: 50%; border: 2px solid var(--border); cursor: pointer; padding: 0; transition: all 0.1s; }
+.wb-color.on { border-color: var(--text); transform: scale(1.15); }
+.wb-color[data-c="white"] { border: 2px solid var(--border) !important; }
+.wb-tool-btn { padding: 5px 9px; background: var(--surface2); border: 1px solid var(--border); border-radius: 6px; cursor: pointer; font-size: 11px; color: var(--text); transition: all 0.1s; }
+.wb-tool-btn.on { background: var(--accent); color: #fff; border-color: var(--accent); }
+.wb-tool-btn:hover { background: var(--border); }
+.wb-tool-btn.on:hover { background: var(--accent2); }
+.wb-width-row { display: flex; align-items: center; gap: 5px; font-size: 11px; color: var(--text2); }
+.wb-width-row input[type="range"] { width: 70px; accent-color: var(--accent); }
+/* SPINNER WHEEL */
+.spin-wrap { position: relative; width: 100%; aspect-ratio: 1; max-width: 280px; margin: 4px auto 8px; }
+.spin-svg { width: 100%; height: 100%; transition: transform 4.5s cubic-bezier(0.18, 0.85, 0.25, 1); transform-origin: 50% 50%; }
+.spin-pointer { position: absolute; top: -2px; left: 50%; transform: translateX(-50%); width: 0; height: 0; border-left: 11px solid transparent; border-right: 11px solid transparent; border-top: 18px solid var(--danger); filter: drop-shadow(0 1px 2px rgba(0,0,0,0.4)); z-index: 2; }
+.spin-center { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 38px; height: 38px; border-radius: 50%; background: var(--surface); border: 3px solid var(--accent); display: flex; align-items: center; justify-content: center; font-size: 16px; font-weight: 700; color: var(--accent); z-index: 2; }
+.spin-result { font-size: clamp(16px,3vw,26px); font-weight: 700; color: var(--accent); text-align: center; min-height: 32px; padding: 4px 8px; word-break: break-word; }
+.spin-empty { display: flex; align-items: center; justify-content: center; aspect-ratio: 1; max-width: 280px; margin: 4px auto; border: 2px dashed var(--border); border-radius: 50%; color: var(--text2); font-size: 12px; padding: 20px; text-align: center; }
+/* SOUND BOARD */
+.snd-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(80px, 1fr)); gap: 6px; }
+.snd-btn { display: flex; flex-direction: column; align-items: center; gap: 3px; padding: 10px 4px; background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; cursor: pointer; transition: all 0.1s; color: var(--text); font-size: 11px; font-weight: 600; }
+.snd-btn:hover { background: var(--accent); color: #fff; border-color: var(--accent); transform: translateY(-1px); }
+.snd-btn:active { transform: scale(0.95); }
+.snd-icon { font-size: 22px; line-height: 1; }
+.snd-label { font-size: 10px; line-height: 1.1; text-align: center; }
+.snd-vol-row { display: flex; align-items: center; gap: 8px; margin-top: 8px; font-size: 11px; color: var(--text2); }
+.snd-vol-row input[type="range"] { flex: 1; accent-color: var(--accent); }
+/* CODE SNIPPET */
+.code-toolbar { display: flex; gap: 5px; align-items: center; margin-bottom: 6px; flex-wrap: wrap; }
+.code-toolbar select { width: auto; flex: 0 0 auto; font-size: 11px; padding: 4px 6px; }
+.code-area { flex: 1; min-height: 0; position: relative; background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; overflow: hidden; display: flex; }
+.code-gutter { background: var(--surface); padding: 8px 6px 8px 8px; color: var(--text2); font-family: 'SF Mono', Consolas, 'Courier New', monospace; font-size: 13px; line-height: 1.5; user-select: none; text-align: right; min-width: 28px; border-right: 1px solid var(--border); white-space: pre; }
+.code-input-wrap { flex: 1; position: relative; min-width: 0; }
+.code-pre { position: absolute; inset: 0; margin: 0; padding: 8px 10px; font-family: 'SF Mono', Consolas, 'Courier New', monospace; font-size: 13px; line-height: 1.5; color: var(--text); white-space: pre; overflow: auto; pointer-events: none; }
+.code-pre code { font: inherit; color: inherit; }
+.code-input { position: absolute; inset: 0; margin: 0; padding: 8px 10px; font-family: 'SF Mono', Consolas, 'Courier New', monospace; font-size: 13px; line-height: 1.5; color: transparent; caret-color: var(--text); background: transparent; border: none; resize: none; outline: none; white-space: pre; overflow: auto; tab-size: 4; }
+.code-input::selection { background: rgba(59, 130, 246, 0.3); color: transparent; }
+.tok-kw { color: #c084fc; font-weight: 600; }
+.tok-str { color: #22c55e; }
+.tok-num { color: #f59e0b; }
+.tok-com { color: #6b7280; font-style: italic; }
+.tok-fn  { color: #60a5fa; }
+[data-theme="contrast"] .tok-kw { color: #ffdd00; }
+[data-theme="contrast"] .tok-str { color: #44ff88; }
+[data-theme="contrast"] .tok-num { color: #ffaa00; }
+[data-theme="contrast"] .tok-com { color: #aaaaaa; }
+[data-theme="contrast"] .tok-fn  { color: #ffffff; }
 /* MODAL */
 #wmodal { position: fixed; inset: 0; z-index: 500; background: rgba(0,0,0,0.55); display: flex; align-items: center; justify-content: center; opacity: 0; pointer-events: none; transition: opacity 0.18s; }
 #wmodal.open { opacity: 1; pointer-events: all; }
@@ -425,6 +500,12 @@ const DEFS = [
   { type:'random',    icon:'&#x1F500;', label:'Random Number',    desc:'Random number range' },
   { type:'seating',   icon:'&#x1F4BA;', label:'Seating Chart',    desc:'Drag-and-drop class seating' },
   { type:'ticker',    icon:'&#x1F4E3;', label:'Announcements',     desc:'Rotating classroom announcements' },
+  { type:'donow',     icon:'&#x1F4CC;', label:'Do Now / Exit',     desc:'Big-text warmup or exit prompt' },
+  { type:'rotation',  icon:'&#x1F501;', label:'Rotation Timer',    desc:'Auto-advancing station timer' },
+  { type:'whiteboard',icon:'&#x270F;',  label:'Whiteboard',        desc:'Quick freehand sketch space' },
+  { type:'spinner',   icon:'&#x1F3A1;', label:'Spinner Wheel',     desc:'Animated wheel of student names' },
+  { type:'soundboard',icon:'&#x1F3B5;', label:'Sound Board',       desc:'Bell, applause, chimes, buzzer' },
+  { type:'code',      icon:'&#x1F4BB;', label:'Code Snippet',      desc:'Highlighted code for projection' },
 ];
 
 // Default pixel sizes [width, height] per widget type
@@ -446,6 +527,12 @@ const DEFAULT_SIZES = {
   random:     [240, 205],
   seating:    [520, 420],
   ticker:     [420, 240],
+  donow:      [420, 320],
+  rotation:   [320, 400],
+  whiteboard: [500, 400],
+  spinner:    [380, 460],
+  soundboard: [340, 280],
+  code:       [460, 380],
 };
 
 let S = {
@@ -794,7 +881,7 @@ function addWidget(type){
 }
 function initWidget(w){
   const body=g('wb-'+w.id); if(!body) return;
-  const fn={clock:initClock,period:initPeriod,timer:initTimer,stopwatch:initStopwatch,pomodoro:initPomodoro,notes:initNotes,checklist:initChecklist,calculator:initCalc,youtube:initYoutube,picker:initPicker,noise:initNoise,qrcode:initQR,webclip:initWebClip,dice:initDice,random:initRandom,seating:initSeating,ticker:initTicker}[w.type];
+  const fn={clock:initClock,period:initPeriod,timer:initTimer,stopwatch:initStopwatch,pomodoro:initPomodoro,notes:initNotes,checklist:initChecklist,calculator:initCalc,youtube:initYoutube,picker:initPicker,noise:initNoise,qrcode:initQR,webclip:initWebClip,dice:initDice,random:initRandom,seating:initSeating,ticker:initTicker,donow:initDoNow,rotation:initRotation,whiteboard:initWhiteboard,spinner:initSpinner,soundboard:initSoundboard,code:initCode}[w.type];
   if(fn) fn(w,body);
 }
 
@@ -1478,6 +1565,474 @@ function initTicker(w,body) {
 
   updateDisplay(); startAuto();
   cleanups[w.id]=()=>clearInterval(iv);
+}
+
+// ── DO NOW / EXIT TICKET ──
+function initDoNow(w,body) {
+  if(!w.state||typeof w.state!=='object') w.state={};
+  const s=w.state;
+  if(!s.mode) s.mode='donow';
+  if(typeof s.prompt!=='string') s.prompt='';
+  if(typeof s.sub!=='string') s.sub='';
+  if(typeof s.editing!=='boolean') s.editing=!s.prompt;
+
+  body.style.display='flex'; body.style.flexDirection='column'; body.style.gap='8px';
+
+  function tagText(){ return s.mode==='exit'?'Exit Ticket':'Do Now'; }
+  function tagClass(){ return s.mode==='exit'?'exit':'donow'; }
+  function placeholder(){ return s.mode==='exit'?'What is one thing you learned today?':'Today’s warm-up question goes here...'; }
+
+  function render(){
+    if(s.editing){
+      body.innerHTML=`
+        <div class="donow-mode-row">
+          <button class="toggle-btn sm${s.mode==='donow'?' on':''}" data-m="donow">Do Now</button>
+          <button class="toggle-btn sm${s.mode==='exit'?' on':''}" data-m="exit">Exit Ticket</button>
+          <span style="flex:1"></span>
+          <button class="btn btn-p sm" id="dndone-${w.id}">Display</button>
+        </div>
+        <div class="donow-edit">
+          <textarea id="dnp-${w.id}" placeholder="${placeholder()}">${esc(s.prompt)}</textarea>
+          <textarea class="sub" id="dns-${w.id}" placeholder="Optional sub-text or instructions...">${esc(s.sub)}</textarea>
+        </div>`;
+      body.querySelectorAll('[data-m]').forEach(btn=>{
+        btn.addEventListener('click',()=>{ s.mode=btn.dataset.m; saveS(); render(); });
+      });
+      g('dnp-'+w.id)?.addEventListener('input',e=>{ s.prompt=e.target.value; saveS(); });
+      g('dns-'+w.id)?.addEventListener('input',e=>{ s.sub=e.target.value; saveS(); });
+      g('dndone-'+w.id)?.addEventListener('click',()=>{ s.editing=false; saveS(); render(); });
+    } else {
+      body.innerHTML=`
+        <div class="donow-wrap">
+          <div style="display:flex;align-items:center;gap:6px;">
+            <span class="donow-tag ${tagClass()}">${tagText()}</span>
+            <span style="flex:1"></span>
+            <button class="btn btn-s sm" id="dnedit-${w.id}">Edit</button>
+          </div>
+          <div class="donow-display">
+            <div class="donow-prompt">${s.prompt?esc(s.prompt):'<span style=\"color:var(--text2);font-style:italic\">Click Edit to add a prompt</span>'}</div>
+            ${s.sub?`<div class="donow-sub">${esc(s.sub)}</div>`:''}
+          </div>
+        </div>`;
+      g('dnedit-'+w.id)?.addEventListener('click',()=>{ s.editing=true; saveS(); render(); });
+    }
+  }
+  render();
+}
+
+// ── ROTATION TIMER ──
+function initRotation(w,body) {
+  if(!w.state||typeof w.state!=='object') w.state={};
+  const s=w.state;
+  if(!Array.isArray(s.stations)||!s.stations.length) s.stations=['Station 1','Station 2','Station 3'];
+  if(typeof s.duration!=='number') s.duration=300;
+  if(typeof s.current!=='number') s.current=0;
+  if(typeof s.remS!=='number') s.remS=s.duration;
+  s.running=false;
+  let iv=null, startT=0, baseRem=s.remS;
+
+  function fmt(t){ t=Math.max(0,t); return fmt2(Math.floor(t/60))+':'+fmt2(t%60); }
+
+  function render(){
+    body.innerHTML=`
+      <div class="rot-station">${esc(s.stations[s.current]||'—')}</div>
+      <div class="rot-station-meta">Station ${s.current+1} of ${s.stations.length}</div>
+      <div class="big-time" id="rott-${w.id}" style="font-size:clamp(28px,5vw,46px)">${fmt(s.remS)}</div>
+      <div class="prog-track"><div class="prog-fill" id="rotp-${w.id}" style="width:${s.duration>0?Math.max(0,Math.min(100,s.remS/s.duration*100)):0}%;background:var(--accent)"></div></div>
+      <div class="btn-row">
+        <button class="btn btn-p sm" id="rotgo-${w.id}">&#x25B6; Start</button>
+        <button class="btn btn-s sm" id="rotnext-${w.id}">Next &#x25B8;</button>
+        <button class="btn btn-s sm" id="rotreset-${w.id}">&#x21BA; Reset</button>
+      </div>
+      <div class="rot-cfg">
+        <span>Each station:</span>
+        <input type="number" id="rotmin-${w.id}" min="0" max="60" value="${Math.floor(s.duration/60)}">
+        <span>min</span>
+        <input type="number" id="rotsec-${w.id}" min="0" max="59" value="${s.duration%60}">
+        <span>sec</span>
+      </div>
+      <div class="rot-list" id="rotlist-${w.id}">
+        ${s.stations.map((st,i)=>`<div class="rot-item${i===s.current?' cur':''}"><span style="font-size:11px;opacity:0.7;min-width:18px">${i+1}.</span><input type="text" data-i="${i}" value="${esc(st)}" placeholder="Station name"><button class="rot-del" data-i="${i}" title="Remove">&#x2715;</button></div>`).join('')}
+      </div>
+      <div style="display:flex;gap:4px;margin-top:6px">
+        <button class="btn btn-s sm" id="rotadd-${w.id}" style="flex:1">+ Station</button>
+      </div>`;
+    body.querySelectorAll('.rot-item input[type="text"]').forEach(inp=>{
+      inp.addEventListener('change',()=>{ s.stations[+inp.dataset.i]=inp.value||('Station '+(+inp.dataset.i+1)); saveS(); });
+    });
+    body.querySelectorAll('.rot-del').forEach(b=>{
+      b.addEventListener('click',()=>{
+        if(s.stations.length<=1) return;
+        s.stations.splice(+b.dataset.i,1);
+        if(s.current>=s.stations.length) s.current=s.stations.length-1;
+        saveS(); render();
+      });
+    });
+    g('rotadd-'+w.id)?.addEventListener('click',()=>{ s.stations.push('Station '+(s.stations.length+1)); saveS(); render(); });
+    function applyDur(){ const m=+(g('rotmin-'+w.id)?.value||0), sec=+(g('rotsec-'+w.id)?.value||0); s.duration=Math.max(5,m*60+sec); if(!s.running){ s.remS=s.duration; baseRem=s.remS; updateDisp(); } saveS(); }
+    g('rotmin-'+w.id)?.addEventListener('change',applyDur);
+    g('rotsec-'+w.id)?.addEventListener('change',applyDur);
+    g('rotgo-'+w.id)?.addEventListener('click',toggleRun);
+    g('rotnext-'+w.id)?.addEventListener('click',()=>{ advance(false); });
+    g('rotreset-'+w.id)?.addEventListener('click',()=>{ stop(); s.current=0; s.remS=s.duration; baseRem=s.remS; saveS(); render(); });
+  }
+  function updateDisp(){
+    const tEl=g('rott-'+w.id), pEl=g('rotp-'+w.id);
+    if(tEl){ tEl.textContent=fmt(s.remS); tEl.className='big-time'+(s.remS<=0?' crit':s.remS<=30?' warn':''); tEl.style.fontSize='clamp(28px,5vw,46px)'; }
+    if(pEl){ const pct=s.duration>0?Math.max(0,Math.min(100,s.remS/s.duration*100)):0; pEl.style.width=pct+'%'; pEl.style.background=s.remS<=0?'var(--danger)':s.remS<=30?'var(--warning)':'var(--accent)'; }
+  }
+  function tick(){ if(!s.running) return; s.remS=baseRem-Math.floor((Date.now()-startT)/1000); updateDisp(); if(s.remS<=0){ advance(true); } }
+  function advance(autoChime){
+    if(autoChime) playAlert();
+    s.current=(s.current+1)%s.stations.length;
+    s.remS=s.duration; baseRem=s.remS; startT=Date.now();
+    saveS(); render(); if(s.running){ const b=g('rotgo-'+w.id); if(b) b.innerHTML='&#x23F8; Pause'; }
+  }
+  function toggleRun(){
+    if(!s.running){ s.running=true; baseRem=s.remS; startT=Date.now(); iv=setInterval(tick,250); const b=g('rotgo-'+w.id); if(b) b.innerHTML='&#x23F8; Pause'; }
+    else { stop(); }
+  }
+  function stop(){ s.running=false; if(iv){clearInterval(iv); iv=null;} const b=g('rotgo-'+w.id); if(b) b.innerHTML='&#x25B6; Start'; saveS(); }
+  cleanups[w.id]=()=>{ if(iv) clearInterval(iv); };
+  render();
+}
+
+// ── WHITEBOARD ──
+function initWhiteboard(w,body) {
+  if(!w.state||typeof w.state!=='object') w.state={};
+  const s=w.state;
+  if(!s.color) s.color='#3b82f6';
+  if(!s.width) s.width=3;
+  if(typeof s.tool!=='string') s.tool='pen';
+  const colors=['#1a1a2e','#ef4444','#f59e0b','#22c55e','#3b82f6','#a855f7','#ffffff'];
+  body.style.display='flex'; body.style.flexDirection='column'; body.style.gap='6px';
+  body.innerHTML=`
+    <div class="wb-tools">
+      ${colors.map(c=>`<button class="wb-color${s.tool==='pen'&&c===s.color?' on':''}" data-c="${c}" style="background:${c}" title="${c==='#ffffff'?'White':c}"></button>`).join('')}
+      <span style="width:1px;background:var(--border);align-self:stretch;margin:0 2px"></span>
+      <button class="wb-tool-btn${s.tool==='eraser'?' on':''}" id="wbera-${w.id}">Eraser</button>
+      <div class="wb-width-row">
+        <span>Size</span>
+        <input type="range" id="wbw-${w.id}" min="1" max="20" value="${s.width}">
+        <span id="wbwv-${w.id}" style="min-width:18px">${s.width}</span>
+      </div>
+      <button class="wb-tool-btn" id="wbclr-${w.id}" style="margin-left:auto;color:var(--danger)">Clear</button>
+    </div>
+    <canvas class="wb-canvas" id="wbc-${w.id}"></canvas>`;
+  const canvas=g('wbc-'+w.id);
+  const ctx=canvas.getContext('2d');
+  function resize(){
+    const r=canvas.getBoundingClientRect();
+    const dpr=window.devicePixelRatio||1;
+    const newW=Math.max(50,r.width)*dpr, newH=Math.max(50,r.height)*dpr;
+    if(canvas.width===newW&&canvas.height===newH) return;
+    // Preserve drawing during resize
+    let snap=null; try{ snap=ctx.getImageData(0,0,canvas.width||1,canvas.height||1); }catch(e){}
+    canvas.width=newW; canvas.height=newH;
+    ctx.scale(dpr,dpr); ctx.lineCap='round'; ctx.lineJoin='round';
+    if(snap){ try{ ctx.putImageData(snap,0,0);}catch(e){} }
+  }
+  resize();
+  const ro=new ResizeObserver(()=>resize()); ro.observe(canvas);
+  let drawing=false, lastX=0, lastY=0;
+  function getPos(e){
+    const r=canvas.getBoundingClientRect();
+    const t=e.touches?e.touches[0]:e;
+    return { x:t.clientX-r.left, y:t.clientY-r.top };
+  }
+  function start(e){ e.preventDefault(); drawing=true; const p=getPos(e); lastX=p.x; lastY=p.y; ctx.beginPath(); ctx.moveTo(lastX,lastY); }
+  function move(e){
+    if(!drawing) return; e.preventDefault();
+    const p=getPos(e);
+    ctx.globalCompositeOperation = s.tool==='eraser'?'destination-out':'source-over';
+    ctx.strokeStyle = s.color;
+    ctx.lineWidth = s.tool==='eraser'?s.width*4:s.width;
+    ctx.lineTo(p.x,p.y); ctx.stroke();
+    lastX=p.x; lastY=p.y;
+  }
+  function end(){ drawing=false; ctx.beginPath(); }
+  canvas.addEventListener('mousedown',start);
+  canvas.addEventListener('mousemove',move);
+  window.addEventListener('mouseup',end);
+  canvas.addEventListener('touchstart',start,{passive:false});
+  canvas.addEventListener('touchmove',move,{passive:false});
+  canvas.addEventListener('touchend',end);
+
+  body.querySelectorAll('.wb-color').forEach(b=>{
+    b.addEventListener('click',()=>{ s.color=b.dataset.c; s.tool='pen'; saveS(); body.querySelectorAll('.wb-color').forEach(x=>x.classList.toggle('on',x.dataset.c===s.color)); g('wbera-'+w.id)?.classList.remove('on'); });
+  });
+  g('wbera-'+w.id)?.addEventListener('click',()=>{ s.tool=s.tool==='eraser'?'pen':'eraser'; saveS(); g('wbera-'+w.id).classList.toggle('on',s.tool==='eraser'); body.querySelectorAll('.wb-color').forEach(x=>x.classList.toggle('on',s.tool==='pen'&&x.dataset.c===s.color)); });
+  g('wbw-'+w.id)?.addEventListener('input',e=>{ s.width=+e.target.value; const v=g('wbwv-'+w.id); if(v) v.textContent=s.width; saveS(); });
+  g('wbclr-'+w.id)?.addEventListener('click',()=>{ if(!confirm('Clear the whiteboard?')) return; ctx.clearRect(0,0,canvas.width,canvas.height); });
+
+  cleanups[w.id]=()=>{ ro.disconnect(); window.removeEventListener('mouseup',end); };
+}
+
+// ── SPINNER WHEEL ──
+function initSpinner(w,body) {
+  if(!w.state||!Array.isArray(w.state.rosters)){
+    const old=w.state||{};
+    w.state={rosters:[{name:'Class 1',names:old.names||''}],active:0,last:'',remove:false,rot:0};
+  }
+  const s=w.state;
+  if(!Number.isInteger(s.active)||s.active>=s.rosters.length) s.active=0;
+  if(typeof s.rot!=='number') s.rot=0;
+  let pickedSets=s.rosters.map(()=>new Set());
+  let spinning=false;
+  const palette=['#ef4444','#f59e0b','#fbbf24','#22c55e','#10b981','#3b82f6','#6366f1','#a855f7','#ec4899','#f43f5e','#14b8a6','#84cc16'];
+
+  function activeR(){ return s.rosters[s.active]; }
+  function getNames(){ const all=(activeR().names||'').split('\n').map(n=>n.trim()).filter(Boolean); return s.remove?all.filter(n=>!pickedSets[s.active].has(n)):all; }
+
+  function buildWheel(names){
+    if(!names.length) return '<div class="spin-empty">Add names below to populate the wheel</div>';
+    const n=names.length, R=100, cx=110, cy=110, ang=2*Math.PI/n;
+    let svg=`<div class="spin-wrap"><div class="spin-pointer"></div><svg class="spin-svg" id="spinsvg-${w.id}" viewBox="0 0 220 220" style="transform:rotate(${s.rot}deg)">`;
+    for(let i=0;i<n;i++){
+      const a0=i*ang-Math.PI/2, a1=(i+1)*ang-Math.PI/2;
+      const x0=cx+R*Math.cos(a0), y0=cy+R*Math.sin(a0);
+      const x1=cx+R*Math.cos(a1), y1=cy+R*Math.sin(a1);
+      const large=ang>Math.PI?1:0;
+      const color=palette[i%palette.length];
+      svg+=`<path d="M${cx},${cy} L${x0.toFixed(1)},${y0.toFixed(1)} A${R},${R} 0 ${large} 1 ${x1.toFixed(1)},${y1.toFixed(1)} Z" fill="${color}" stroke="#fff" stroke-width="1.5"/>`;
+      const tA=(a0+a1)/2;
+      const tx=cx+R*0.62*Math.cos(tA), ty=cy+R*0.62*Math.sin(tA);
+      const deg=(tA*180/Math.PI);
+      const label=names[i].length>12?names[i].slice(0,11)+'…':names[i];
+      svg+=`<text x="${tx.toFixed(1)}" y="${ty.toFixed(1)}" fill="#fff" font-size="${n>12?9:n>8?11:13}" font-weight="700" text-anchor="middle" dominant-baseline="middle" transform="rotate(${deg.toFixed(1)} ${tx.toFixed(1)} ${ty.toFixed(1)})" style="paint-order:stroke;stroke:rgba(0,0,0,0.4);stroke-width:0.6;">${esc(label)}</text>`;
+    }
+    svg+=`</svg><div class="spin-center">&#x21BA;</div></div>`;
+    return svg;
+  }
+
+  function render(){
+    const tabs=s.rosters.map((r,i)=>`<button class="toggle-btn sm${i===s.active?' on':''}" data-ri="${i}" title="${esc(r.name)}">${esc(r.name.length>8?r.name.slice(0,7)+'…':r.name)}</button>`).join('');
+    const canAdd=s.rosters.length<8;
+    const names=getNames();
+    body.innerHTML=`
+      <div style="display:flex;gap:4px;flex-wrap:wrap;margin-bottom:6px;align-items:center;">
+        ${tabs}
+        ${canAdd?`<button class="copy-day-btn" id="spaddc-${w.id}">+ Class</button>`:''}
+      </div>
+      ${buildWheel(names)}
+      <div class="spin-result" id="spr-${w.id}">${s.last?esc(s.last):'Press Spin!'}</div>
+      <div class="btn-row">
+        <button class="btn btn-p" id="spgo-${w.id}">Spin!</button>
+        <label style="display:flex;align-items:center;gap:4px;font-size:11px;color:var(--text2);cursor:pointer"><input type="checkbox" id="sprm-${w.id}"${s.remove?' checked':''} style="accent-color:var(--accent);width:auto"> Remove on pick</label>
+        <button class="btn btn-s sm" id="spreset-${w.id}">Reset</button>
+      </div>
+      <details>
+        <summary>Edit: ${esc(activeR().name)} <span style="font-weight:400">(${(activeR().names||'').split('\n').filter(n=>n.trim()).length} names)</span></summary>
+        <div style="display:flex;gap:4px;margin:6px 0 4px">
+          <input type="text" id="sprname-${w.id}" value="${esc(activeR().name)}" style="flex:1;font-size:11px;padding:4px 6px" placeholder="Class name">
+          <button class="btn btn-s sm" id="sprenm-${w.id}">Rename</button>
+          ${s.rosters.length>1?`<button class="btn btn-s sm" id="sprdel-${w.id}" style="color:var(--danger)">Delete</button>`:''}
+        </div>
+        <textarea class="picker-names" id="spnames-${w.id}" placeholder="One name per line...">${esc(activeR().names)}</textarea>
+      </details>`;
+
+    body.querySelectorAll('[data-ri]').forEach(btn=>{
+      btn.addEventListener('click',()=>{ s.active=+btn.dataset.ri; saveS(); render(); });
+    });
+    g('spaddc-'+w.id)?.addEventListener('click',()=>{ if(s.rosters.length>=8) return; s.rosters.push({name:'Class '+(s.rosters.length+1),names:''}); pickedSets.push(new Set()); s.active=s.rosters.length-1; saveS(); render(); });
+    g('sprenm-'+w.id)?.addEventListener('click',()=>{ const n=g('sprname-'+w.id)?.value.trim(); if(n){ activeR().name=n; saveS(); render(); } });
+    g('sprdel-'+w.id)?.addEventListener('click',()=>{ if(s.rosters.length<=1||!confirm('Delete "'+activeR().name+'"?')) return; s.rosters.splice(s.active,1); pickedSets.splice(s.active,1); s.active=Math.min(s.active,s.rosters.length-1); saveS(); render(); });
+    g('spnames-'+w.id)?.addEventListener('input',()=>{ activeR().names=g('spnames-'+w.id)?.value||''; saveS(); });
+    g('sprm-'+w.id)?.addEventListener('change',e=>{ s.remove=e.target.checked; saveS(); });
+    g('spreset-'+w.id)?.addEventListener('click',()=>{ pickedSets[s.active].clear(); render(); const r=g('spr-'+w.id); if(r) r.textContent='Pool reset!'; });
+    g('spgo-'+w.id)?.addEventListener('click',spin);
+  }
+
+  function spin(){
+    if(spinning) return;
+    const namesAll=getNames();
+    if(!namesAll.length){ const r=g('spr-'+w.id); if(r) r.textContent='Add names first!'; return; }
+    spinning=true;
+    const idx=Math.floor(Math.random()*namesAll.length);
+    const n=namesAll.length, sliceDeg=360/n;
+    // Pointer is at top; we want chosen wedge center at top. Wedge i center angle (svg) = -90 + (i+0.5)*slice
+    // After rotation R, the pointer (at -90 deg svg) sees the wedge whose center+R = -90 (mod 360).
+    // So R = -90 - (-90 + (i+0.5)*slice) - extra_turns*360 = -(i+0.5)*slice - 360*turns
+    // Clockwise spin: target = positive turns + alignment so chosen wedge ends at top
+    const turns=5+Math.floor(Math.random()*3);
+    const target=turns*360-(idx+0.5)*sliceDeg;
+    const svg=g('spinsvg-'+w.id);
+    if(!svg){ spinning=false; return; }
+    // Snap to current rotation (mod 360) without transition, then animate to target
+    const start=((s.rot%360)+360)%360;
+    svg.style.transition='none';
+    svg.style.transform=`rotate(${start}deg)`;
+    void svg.offsetWidth;
+    svg.style.transition='transform 4.5s cubic-bezier(0.18, 0.85, 0.25, 1)';
+    svg.style.transform=`rotate(${target}deg)`;
+    s.rot=((target%360)+360)%360;
+    setTimeout(()=>{
+      const chosen=namesAll[idx];
+      s.last=chosen;
+      pickedSets[s.active].add(chosen);
+      const r=g('spr-'+w.id); if(r) r.textContent=chosen;
+      playAlert();
+      spinning=false;
+      saveS();
+      if(s.remove) render();
+    },4600);
+  }
+  render();
+}
+
+// ── SOUND BOARD ──
+function initSoundboard(w,body) {
+  if(!w.state||typeof w.state!=='object') w.state={};
+  if(typeof w.state.volume!=='number') w.state.volume=0.5;
+  const s=w.state;
+  let actx=null;
+  function ctx(){ if(!actx) actx=new (window.AudioContext||window.webkitAudioContext)(); return actx; }
+  function envGain(c,when,dur,peak){
+    const g=c.createGain();
+    g.gain.setValueAtTime(0.0001,when);
+    g.gain.exponentialRampToValueAtTime(Math.max(0.0001,peak*s.volume),when+0.01);
+    g.gain.exponentialRampToValueAtTime(0.0001,when+dur);
+    g.connect(c.destination);
+    return g;
+  }
+  function tone(freq,dur,type,peak,when){
+    const c=ctx(); when=when||c.currentTime;
+    const o=c.createOscillator(); o.type=type||'sine'; o.frequency.setValueAtTime(freq,when);
+    const g=envGain(c,when,dur,peak||0.3); o.connect(g); o.start(when); o.stop(when+dur+0.05);
+  }
+  const sounds={
+    bell: ()=>{ const c=ctx(); const t=c.currentTime; tone(880,1.2,'sine',0.4,t); tone(1320,1.2,'sine',0.2,t); tone(2640,0.8,'sine',0.1,t); },
+    ding: ()=>{ const c=ctx(); tone(1568,0.4,'sine',0.4,c.currentTime); tone(2093,0.4,'sine',0.2,c.currentTime); },
+    chime:()=>{ const c=ctx(); const t=c.currentTime; [523,659,784].forEach((f,i)=>tone(f,0.6,'sine',0.35,t+i*0.12)); },
+    success:()=>{ const c=ctx(); const t=c.currentTime; [523,659,784,1047].forEach((f,i)=>tone(f,0.25,'triangle',0.35,t+i*0.08)); },
+    fail: ()=>{ const c=ctx(); const t=c.currentTime; [392,330,262].forEach((f,i)=>tone(f,0.3,'sawtooth',0.3,t+i*0.12)); },
+    buzzer:()=>{ const c=ctx(); const t=c.currentTime; tone(180,0.6,'square',0.35,t); tone(140,0.6,'square',0.2,t); },
+    drumroll:()=>{ const c=ctx(); const t=c.currentTime; const dur=1.2;
+      const buf=c.createBuffer(1,c.sampleRate*dur,c.sampleRate); const d=buf.getChannelData(0);
+      for(let i=0;i<d.length;i++){ const env=Math.min(1,i/3000)*Math.max(0,1-i/d.length); d[i]=(Math.random()*2-1)*env*0.6; }
+      const src=c.createBufferSource(); src.buffer=buf;
+      const g=c.createGain(); g.gain.value=s.volume*0.8;
+      const f=c.createBiquadFilter(); f.type='bandpass'; f.frequency.value=160; f.Q.value=4;
+      src.connect(f); f.connect(g); g.connect(c.destination); src.start(t);
+    },
+    applause:()=>{ const c=ctx(); const t=c.currentTime; const dur=2.0;
+      const buf=c.createBuffer(1,c.sampleRate*dur,c.sampleRate); const d=buf.getChannelData(0);
+      for(let i=0;i<d.length;i++){ const env=Math.min(1,i/4000)*Math.max(0,1-i/d.length); const claps=(Math.sin(i/22)+Math.sin(i/37)+Math.sin(i/19))/3; d[i]=(Math.random()*2-1)*env*0.7*Math.abs(claps); }
+      const src=c.createBufferSource(); src.buffer=buf;
+      const g=c.createGain(); g.gain.value=s.volume*0.7;
+      src.connect(g); g.connect(c.destination); src.start(t);
+    },
+    coin:()=>{ const c=ctx(); const t=c.currentTime; tone(988,0.08,'square',0.3,t); tone(1319,0.4,'square',0.3,t+0.08); }
+  };
+  const items=[
+    {k:'bell', i:'&#x1F514;', l:'Bell'},
+    {k:'ding', i:'&#x1F6CE;', l:'Ding'},
+    {k:'chime',i:'&#x1F3B6;', l:'Chime'},
+    {k:'success',i:'&#x2728;',l:'Success'},
+    {k:'fail', i:'&#x274C;',  l:'Fail'},
+    {k:'buzzer',i:'&#x1F4E2;',l:'Buzzer'},
+    {k:'drumroll',i:'&#x1F941;',l:'Drumroll'},
+    {k:'applause',i:'&#x1F44F;',l:'Applause'},
+    {k:'coin', i:'&#x1FA99;',  l:'Coin'},
+  ];
+  body.innerHTML=`
+    <div class="snd-grid">
+      ${items.map(it=>`<button class="snd-btn" data-k="${it.k}"><span class="snd-icon">${it.i}</span><span class="snd-label">${it.l}</span></button>`).join('')}
+    </div>
+    <div class="snd-vol-row">
+      <span>Volume</span>
+      <input type="range" id="sndv-${w.id}" min="0" max="100" value="${Math.round(s.volume*100)}">
+      <span id="sndvv-${w.id}" style="min-width:30px;text-align:right">${Math.round(s.volume*100)}%</span>
+    </div>`;
+  body.querySelectorAll('.snd-btn').forEach(b=>{
+    b.addEventListener('click',()=>{ try{ if(actx&&actx.state==='suspended') actx.resume(); sounds[b.dataset.k] && sounds[b.dataset.k](); }catch(e){} });
+  });
+  g('sndv-'+w.id)?.addEventListener('input',e=>{ s.volume=(+e.target.value)/100; const v=g('sndvv-'+w.id); if(v) v.textContent=Math.round(s.volume*100)+'%'; saveS(); });
+  cleanups[w.id]=()=>{ if(actx){ try{actx.close();}catch(e){} actx=null; } };
+}
+
+// ── CODE SNIPPET ──
+function initCode(w,body) {
+  if(!w.state||typeof w.state!=='object') w.state={};
+  const s=w.state;
+  if(!s.lang) s.lang='python';
+  if(typeof s.code!=='string') s.code='';
+  if(typeof s.fontSize!=='number') s.fontSize=14;
+  body.style.display='flex'; body.style.flexDirection='column'; body.style.gap='4px';
+
+  const KW={
+    python:['False','None','True','and','as','assert','async','await','break','class','continue','def','del','elif','else','except','finally','for','from','global','if','import','in','is','lambda','nonlocal','not','or','pass','raise','return','try','while','with','yield','print','range','len','int','str','float','list','dict','set','tuple','bool','self','input','open','enumerate','zip','map','filter'],
+    javascript:['await','break','case','catch','class','const','continue','debugger','default','delete','do','else','export','extends','false','finally','for','function','if','import','in','instanceof','let','new','null','of','return','super','switch','this','throw','true','try','typeof','undefined','var','void','while','with','yield','async','console','document','window'],
+    java:['abstract','assert','boolean','break','byte','case','catch','char','class','const','continue','default','do','double','else','enum','extends','final','finally','float','for','goto','if','implements','import','instanceof','int','interface','long','native','new','null','package','private','protected','public','return','short','static','strictfp','super','switch','synchronized','this','throw','throws','transient','true','false','try','void','volatile','while','String','System','print','println'],
+    cpp:['alignas','alignof','asm','auto','bool','break','case','catch','char','class','const','constexpr','continue','default','delete','do','double','else','enum','explicit','export','extern','false','float','for','friend','goto','if','inline','int','long','mutable','namespace','new','noexcept','nullptr','operator','private','protected','public','register','return','short','signed','sizeof','static','struct','switch','template','this','throw','true','try','typedef','typename','union','unsigned','using','virtual','void','volatile','while','std','cout','cin','endl','include']
+  };
+
+  function highlight(code,lang){
+    let out=esc(code);
+    // strings (single, double, backtick)
+    out=out.replace(/(&quot;[\s\S]*?&quot;|&#039;[\s\S]*?&#039;|`[\s\S]*?`)/g,'<span class="tok-str">$1</span>');
+    // comments
+    if(lang==='python'){ out=out.replace(/(#[^\n]*)/g,'<span class="tok-com">$1</span>'); }
+    else { out=out.replace(/(\/\/[^\n]*|\/\*[\s\S]*?\*\/)/g,'<span class="tok-com">$1</span>'); }
+    // numbers
+    out=out.replace(/\b(\d+\.?\d*)\b/g,'<span class="tok-num">$1</span>');
+    // keywords
+    const kw=KW[lang]||[];
+    if(kw.length){
+      const re=new RegExp('\\b('+kw.join('|')+')\\b','g');
+      out=out.replace(re,'<span class="tok-kw">$1</span>');
+    }
+    // function calls (heuristic: identifier followed by ()
+    // Keywords are already wrapped in spans so they end with </span> before ( and won't match
+    out=out.replace(/\b([a-zA-Z_][a-zA-Z0-9_]*)(?=\()/g,'<span class="tok-fn">$1</span>');
+    return out;
+  }
+
+  function render(){
+    const lines=Math.max(1,(s.code.match(/\n/g)||[]).length+1);
+    const gutter=Array.from({length:lines},(_,i)=>i+1).join('\n');
+    body.innerHTML=`
+      <div class="code-toolbar">
+        <select id="cl-${w.id}">
+          <option value="python"${s.lang==='python'?' selected':''}>Python</option>
+          <option value="javascript"${s.lang==='javascript'?' selected':''}>JavaScript</option>
+          <option value="java"${s.lang==='java'?' selected':''}>Java</option>
+          <option value="cpp"${s.lang==='cpp'?' selected':''}>C++</option>
+        </select>
+        <button class="btn btn-s sm" id="cfa-${w.id}" title="Smaller">A-</button>
+        <span style="font-size:11px;color:var(--text2);min-width:30px;text-align:center" id="cfs-${w.id}">${s.fontSize}px</span>
+        <button class="btn btn-s sm" id="cfb-${w.id}" title="Larger">A+</button>
+        <button class="btn btn-s sm" id="ccpy-${w.id}" style="margin-left:auto">Copy</button>
+        <button class="btn btn-s sm" id="cclr-${w.id}">Clear</button>
+      </div>
+      <div class="code-area" id="ca-${w.id}">
+        <pre class="code-gutter" id="cg-${w.id}" style="font-size:${s.fontSize}px">${gutter}</pre>
+        <div class="code-input-wrap">
+          <pre class="code-pre" id="cp-${w.id}" style="font-size:${s.fontSize}px"><code>${highlight(s.code,s.lang)}</code></pre>
+          <textarea class="code-input" id="ci-${w.id}" spellcheck="false" autocapitalize="off" autocorrect="off" placeholder="// Paste or type code here..." style="font-size:${s.fontSize}px">${esc(s.code)}</textarea>
+        </div>
+      </div>`;
+    const ta=g('ci-'+w.id), pre=g('cp-'+w.id), gt=g('cg-'+w.id);
+    function syncScroll(){ if(pre){ pre.scrollTop=ta.scrollTop; pre.scrollLeft=ta.scrollLeft; } if(gt){ gt.scrollTop=ta.scrollTop; } }
+    function rerenderCode(){
+      s.code=ta.value;
+      const ln=Math.max(1,(s.code.match(/\n/g)||[]).length+1);
+      if(gt) gt.textContent=Array.from({length:ln},(_,i)=>i+1).join('\n');
+      if(pre) pre.innerHTML='<code>'+highlight(s.code,s.lang)+'</code>';
+    }
+    let saveT=null;
+    ta?.addEventListener('input',()=>{ rerenderCode(); clearTimeout(saveT); saveT=setTimeout(saveS,400); });
+    ta?.addEventListener('scroll',syncScroll);
+    ta?.addEventListener('keydown',e=>{
+      if(e.key==='Tab'){ e.preventDefault(); const start=ta.selectionStart, end=ta.selectionEnd; ta.value=ta.value.slice(0,start)+'    '+ta.value.slice(end); ta.selectionStart=ta.selectionEnd=start+4; rerenderCode(); }
+    });
+    g('cl-'+w.id)?.addEventListener('change',e=>{ s.lang=e.target.value; saveS(); rerenderCode(); });
+    g('cfa-'+w.id)?.addEventListener('click',()=>{ s.fontSize=Math.max(10,s.fontSize-2); saveS(); render(); });
+    g('cfb-'+w.id)?.addEventListener('click',()=>{ s.fontSize=Math.min(28,s.fontSize+2); saveS(); render(); });
+    g('ccpy-'+w.id)?.addEventListener('click',async()=>{ try{ await navigator.clipboard.writeText(s.code); const b=g('ccpy-'+w.id); if(b){ const t=b.textContent; b.textContent='Copied!'; setTimeout(()=>{if(b)b.textContent=t;},900); } }catch(e){} });
+    g('cclr-'+w.id)?.addEventListener('click',()=>{ if(!confirm('Clear code?')) return; s.code=''; saveS(); render(); });
+  }
+  render();
 }
 
 // ── SOUND ALERT ──
